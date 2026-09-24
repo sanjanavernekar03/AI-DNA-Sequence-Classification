@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="prof_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<div class="d-flex align-items-center justify-content-between mb-4">
+<div>
+<h2 class="fw-bold mb-1" data-i18n="prof_title" style="font-size: 1.5rem; color: var(--text-main, #172033);">User Profile</h2>
+<p class="small mb-0" data-i18n="prof_desc" style="color: var(--text-secondary, #536174);">Manage your account details and security settings</p>
+</div>
+<a class="btn btn-outline-primary" href="{{ url_for('dashboard.index') }}" style="border-color: var(--border-color, #D9E1EA);">
+<i class="bi bi-arrow-left"></i> <span data-i18n="admin_nav_dashboard">Dashboard</span>
+</a>
+</div>
+<div class="row g-4">
+<!-- Account Info -->
+<div class="col-lg-12 mb-2">
+<!-- Alert for testing if needed -->
+</div>
+<div class="col-lg-6">
+<div class="card border-0 shadow-sm p-4 h-100" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="d-flex align-items-center gap-3 mb-4">
+<div class="d-flex align-items-center justify-content-center rounded" style="width: 48px; height: 48px; background: #E3F2FD; color: #1769AA;">
+<i class="bi bi-person fs-4"></i>
+</div>
+<div>
+<h5 class="fw-bold mb-0" data-i18n="prof_account_info" style="color: var(--text-main, #172033);">Account Information</h5>
+<span class="small" style="color: var(--text-secondary, #536174);">Username: @{{ user.username }}</span>
+</div>
+</div>
+<form method="POST">
+<input name="action" type="hidden" value="update_profile"/>
+<div class="row g-3">
+<div class="col-md-6 mb-2">
+<label class="form-label small fw-medium" data-i18n="prof_fullname" style="color: var(--text-secondary, #536174);">Full Name</label>
+<input class="form-control" name="full_name" required="" style="border-color: var(--border-color, #D9E1EA);" type="text" value="{{ user.full_name }}"/>
+</div>
+<div class="col-md-6 mb-2">
+<label class="form-label small fw-medium" data-i18n="prof_email" style="color: var(--text-secondary, #536174);">Email Address</label>
+<input class="form-control" name="email" required="" style="border-color: var(--border-color, #D9E1EA);" type="email" value="{{ user.email }}"/>
+</div>
+<div class="col-md-12 mb-2">
+<label class="form-label small fw-medium" data-i18n="reg_label_phone" style="color: var(--text-secondary, #536174);">Phone Number</label>
+<input class="form-control" name="phone" required="" style="border-color: var(--border-color, #D9E1EA);" type="tel" value="{{ user.phone or '' }}"/>
+</div>
+<div class="col-md-12 mb-2">
+<label class="form-label small fw-medium" data-i18n="gen_address_used_for_hos_3d36" style="color: var(--text-secondary, #536174);">Address (Used for Hospital Search)</label>
+<textarea class="form-control" name="address" required="" rows="2" style="border-color: var(--border-color, #D9E1EA);">{{ user.address or '' }}</textarea>
+</div>
+<div class="col-md-12 mb-3">
+<label class="form-label small fw-medium" data-i18n="prof_user_fixed" style="color: var(--text-secondary, #536174);">Username (Fixed)</label>
+<input class="form-control" disabled="" style="border-color: var(--border-color, #D9E1EA); background-color: var(--bg-surface-elevated, #F1F5F9);" type="text" value="{{ user.username }}"/>
+</div>
+</div>
+<button class="btn text-white py-2 px-4 fw-medium" data-i18n="gen_save_changes_f5d6" style="background-color: var(--primary, #1769AA); border-radius: 8px;" type="submit">
+<i class="bi bi-floppy me-1"></i> Save Changes
+                    </button>
+</form></div>
+</div>
+<!-- Health Info -->
+<div class="col-lg-6">
+<div class="card border-0 shadow-sm p-4 h-100" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="d-flex align-items-center gap-3 mb-4">
+<div class="d-flex align-items-center justify-content-center rounded" style="width: 48px; height: 48px; background: #F3E5F5; color: #8E24AA;">
+<i class="bi bi-heart-pulse fs-4"></i>
+</div>
+<div>
+<h5 class="fw-bold mb-0" data-i18n="gen_health_information_dad9" style="color: var(--text-main, #172033);">Health Information</h5>
+<span class="small" data-i18n="gen_basic_medical_detail_f602" style="color: var(--text-secondary, #536174);">Basic medical details</span>
+</div>
+</div>
+<div class="row g-3">
+<div class="col-md-4 mb-2">
+<label class="form-label small fw-medium" data-i18n="gen_blood_group_0bf1" style="color: var(--text-secondary, #536174);">Blood Group</label>
+<select class="form-select" name="blood_group" style="border-color: var(--border-color, #D9E1EA);">
+<option data-i18n="gen_select_e062" value="">Select</option>
+                                {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                <option value="{{ bg }}" {% if user.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+                                {% endfor %}
+                            </select>
+</div>
+<div class="col-md-4 mb-2">
+<label class="form-label small fw-medium" data-i18n="gen_height_cm_20fb" style="color: var(--text-secondary, #536174);">Height (cm)</label>
+<input class="form-control" name="height" step="0.1" style="border-color: var(--border-color, #D9E1EA);" type="number" value="{{ user.height or '' }}"/>
+</div>
+<div class="col-md-4 mb-2">
+<label class="form-label small fw-medium" data-i18n="gen_weight_kg_9172" style="color: var(--text-secondary, #536174);">Weight (kg)</label>
+<input class="form-control" name="weight" step="0.1" style="border-color: var(--border-color, #D9E1EA);" type="number" value="{{ user.weight or '' }}"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Change Password -->
+<div class="col-lg-6 mt-4">
+<div class="card border-0 shadow-sm p-4 h-100" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="d-flex align-items-center gap-3 mb-4">
+<div class="d-flex align-items-center justify-content-center rounded" style="width: 48px; height: 48px; background: #E0F2F1; color: #00695C;">
+<i class="bi bi-key fs-4"></i>
+</div>
+<div>
+<h5 class="fw-bold mb-0" data-i18n="prof_update_pass" style="color: var(--text-main, #172033);">Update Password</h5>
+<span class="small" data-i18n="prof_pass_sub" style="color: var(--text-secondary, #536174);">Keep your account secure</span>
+</div>
+</div>
+<form method="POST">
+<input name="action" type="hidden" value="change_password"/>
+<div class="mb-3">
+<label class="form-label small fw-medium" data-i18n="prof_curr_pass" style="color: var(--text-secondary, #536174);">Current Password</label>
+<input class="form-control" name="current_password" required="" style="border-color: var(--border-color, #D9E1EA);" type="password"/>
+</div>
+<div class="mb-3">
+<label class="form-label small fw-medium" data-i18n="prof_new_pass" style="color: var(--text-secondary, #536174);">New Password</label>
+<input class="form-control" minlength="8" name="new_password" required="" style="border-color: var(--border-color, #D9E1EA);" type="password"/>
+</div>
+<div class="mb-4">
+<label class="form-label small fw-medium" data-i18n="prof_conf_pass" style="color: var(--text-secondary, #536174);">Confirm New Password</label>
+<input class="form-control" minlength="8" name="confirm_password" required="" style="border-color: var(--border-color, #D9E1EA);" type="password"/>
+</div>
+<button class="btn text-white py-2 px-4 fw-medium" data-i18n="prof_update_pass" style="background-color: var(--secondary, #0F8B8D); border-radius: 8px;" type="submit">
+<i class="bi bi-shield-check me-1"></i> Update Password
+                    </button>
+</form>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

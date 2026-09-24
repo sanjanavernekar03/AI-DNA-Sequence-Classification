@@ -1,0 +1,24 @@
+﻿{% extends "base.html" %}
+
+{% block title %}500 â€” System Error â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="dash_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container py-5 text-center">
+<div class="card-glass p-5 mx-auto" style="max-width: 580px;">
+<h1 class="display-1 fw-bold mb-2" style="color: var(--primary, #6D28D9);">500</h1>
+<h3 class="fw-bold mb-3" data-i18n="err_500_pipeline" style="color: var(--text-main, #0F172A);">Analysis Pipeline Error</h3>
+<p class="small mb-4" style="color: var(--text-secondary, #475569);">
+            {{ error_msg|default("An unexpected internal exception occurred while processing the DNA analysis pipeline. Please verify your input and retry.") }}
+        </p>
+<div class="d-flex justify-content-center gap-2">
+<a class="btn btn-primary-gradient" data-i18n="admin_nav_dashboard" href="{{ url_for('dashboard.index') }}">
+<i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+<a class="btn btn-outline-custom" data-i18n="gen_go_back_4f2f" href="javascript:history.back()">
+<i class="bi bi-arrow-left"></i> Go Back
+            </a>
+</div>
+</div>
+</div>
+{% endblock %}

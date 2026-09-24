@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}DNAura — AI-Powered Genetic Analysis &amp; Health Platform{% endblock %}
+
+{% block content %}
+<span data-i18n="welcome_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="welcome-viewport d-flex align-items-center" style="min-height: calc(100vh - 75px); padding: 4rem 0; background-color: var(--bg-main);">
+<div class="container">
+<div class="row align-items-center">
+<!-- LEFT COLUMN: Text & CTAs -->
+<div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
+<div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4" style="width: 70px; height: 70px; background: var(--primary, #1769AA); color: #FFFFFF; font-size: 2rem; box-shadow: 0 8px 24px rgba(107, 70, 193, 0.2);">
+<i class="bi bi-robot"></i>
+</div>
+<h1 class="fw-bold mb-1" data-i18n="gen_genovaix_6a2b" style="font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; color: var(--text-main, #1E293B); letter-spacing: -0.02em;">
+                    DNAura
+                </h1>
+<h3 class="mb-4" data-i18n="auto_2ee346" style="font-size: 1.1rem; font-weight: 700; color: var(--primary, #6B46C1); letter-spacing: 1.5px; text-transform: uppercase;">
+                    Your DNA Your Insight
+                </h3>
+<p class="mb-4" data-i18n="gen_ai_powered_genetic_a_c9d4" style="font-size: 1.2rem; font-weight: 500; color: var(--secondary, #0D9488);">
+                    AI-Powered Genetic Analysis &amp; Health Platform
+                </p>
+<p class="mb-5" data-i18n="gen_explore_dna_sequence_18ee" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-secondary, #64748B);">
+                    Explore DNA sequences, identify mutations, compare genetic patterns and access AI-assisted health tools through one integrated, beautifully designed platform.
+                </p>
+<div class="d-flex flex-wrap gap-3 mb-5 pb-2">
+                    {% if session.user_id %}
+                    <a class="btn px-4 py-3 text-white shadow-sm d-flex align-items-center" data-i18n="welcome_open_dashboard" href="{{ url_for('dashboard.index') }}" style="background-color: var(--primary, #6B46C1); border-radius: 10px; font-weight: 600;">
+<i class="bi bi-house-door me-2 fs-5"></i> Open Dashboard
+                    </a>
+                    {% else %}
+                    <a class="btn px-5 py-3 text-white shadow-sm" data-i18n="welcome_sign_in" href="{{ url_for('auth.login') }}" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)';" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 20px rgba(107, 70, 193, 0.2)';" style="background-color: var(--primary, #6B46C1); border-radius: 10px; font-weight: 600; font-size: 1.1rem; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                        Login
+                    </a>
+<a class="btn px-5 py-3 shadow-sm" data-i18n="nav_register" href="{{ url_for('auth.register') }}" onmouseout="this.style.transform='translateY(0)';" onmouseover="this.style.transform='translateY(-2px)';" style="background-color: var(--bg-card); color: var(--primary, #6B46C1); border: 2px solid var(--primary, #6B46C1); border-radius: 10px; font-weight: 600; font-size: 1.1rem; transition: transform 0.2s ease;">
+                        Register
+                    </a>
+                    {% endif %}
+                </div>
+<div class="d-flex flex-wrap gap-4 mt-4 opacity-75">
+<div class="d-flex align-items-center gap-2 small fw-medium" data-i18n="auto_f83d80" style="color: var(--text-secondary);">
+<i class="bi bi-file-earmark-code text-primary fs-6"></i> Sequence Analysis
+                    </div>
+<div class="d-flex align-items-center gap-2 small fw-medium" data-i18n="auto_473955" style="color: var(--text-secondary);">
+<i class="bi bi-diagram-3 text-warning fs-6"></i> Mutation Detection
+                    </div>
+<div class="d-flex align-items-center gap-2 small fw-medium" data-i18n="auto_7fa27a" style="color: var(--text-secondary);">
+<i class="bi bi-lightning-charge text-info fs-6"></i> Genetic Insights
+                    </div>
+</div>
+</div>
+<!-- RIGHT COLUMN: DNA Illustration -->
+<div class="col-lg-6 text-center position-relative d-none d-lg-block">
+<!-- Decorative background blob -->
+<div class="position-absolute rounded-circle" style="width: 400px; height: 400px; background: radial-gradient(circle, rgba(107, 70, 193, 0.1) 0%, rgba(255,255,255,0) 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0;"></div>
+<div class="position-absolute rounded-circle" style="width: 300px; height: 300px; background: radial-gradient(circle, rgba(13, 148, 136, 0.1) 0%, rgba(255,255,255,0) 70%); top: 40%; left: 60%; transform: translate(-50%, -50%); z-index: 0;"></div>
+<!-- Main Image -->
+<img alt="DNA Illustration" class="img-fluid position-relative welcome-dna-img" data-i18n-title="welcome_img_alt" src="{{ url_for('static', filename='images/dna_illustration.jpg') }}" style="z-index: 1; max-width: 90%; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.05)); animation: float 6s ease-in-out infinite;" title="DNA Sequence &amp; Genetic Analysis Illustration"/>
+</div>
+</div>
+</div>
+</div>
+<style>
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
+}
+</style>
+{% endblock %}

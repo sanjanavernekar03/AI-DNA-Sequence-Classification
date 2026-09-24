@@ -1,0 +1,123 @@
+/* AI HEALTH & DIET PLANNER STYLES */
+
+.health-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Dark Healthcare Card Styling */
+.guidance-card-light {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.25s ease-in-out;
+}
+
+.guidance-card-light:hover {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.1);
+}
+
+/* Medical Disclaimer Card */
+.disclaimer-card-light {
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    border-radius: 14px;
+    color: #B45309;
+}
+
+.disclaimer-card-light strong {
+    color: #92400E;
+}
+
+/* Section Cards for Guidance Results */
+.guidance-section-light {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guidance-section-light:hover {
+    transform: translateY(-3px);
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Text Visibility & Typography */
+.text-high-contrast {
+    color: var(--text-main) !important;
+}
+
+.text-muted-contrast {
+    color: var(--text-secondary) !important;
+}
+
+.guidance-heading-emerald {
+    color: #10B981 !important;
+}
+
+.guidance-heading-cyan {
+    color: #06B6D4 !important;
+}
+
+.guidance-heading-warning {
+    color: #F59E0B !important;
+}
+
+.guidance-heading-purple {
+    color: #C084FC !important;
+}
+
+/* List Styling & Icons */
+.guidance-list {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 0;
+}
+
+.guidance-list-item {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: flex-start;
+}
+
+.guidance-list-item:last-child {
+    border-bottom: none;
+}
+
+.guidance-icon {
+    font-size: 1.1rem;
+    margin-right: 0.6rem;
+    margin-top: 0.15rem;
+}
+
+/* Sample Prompt Buttons */
+.sample-prompt-btn {
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #CBD5E1;
+    transition: all 0.2s ease;
+}
+
+.sample-prompt-btn:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #10B981;
+}
+
+/* Responsive Grid Spacing */
+@media (max-width: 768px) {
+    .guidance-section-dark {
+        padding: 1rem;
+    }
+}

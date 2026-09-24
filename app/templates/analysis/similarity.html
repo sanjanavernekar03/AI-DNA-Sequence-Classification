@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}DNA Similarity Analysis â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="sim_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+<div>
+<div class="d-flex align-items-center gap-2 mb-1">
+<span class="badge badge-c" data-i18n="welcome_mod2_title"><i class="bi bi-intersect me-1"></i> Similarity Analysis</span>
+<h2 class="fw-bold mb-0" data-i18n="sim_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Similarity Analysis</h2>
+</div>
+<p class="small mb-0" data-i18n="sim_desc" style="color: var(--text-secondary, #475569);">Compares two DNA sequences using pairwise global alignment to calculate exact similarity %, differences, and mismatch coordinates.</p>
+</div>
+<div class="d-flex gap-2">
+            {% if result and result.id %}
+            <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='similarity', analysis_id=result.id) }}">
+<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+</a>
+            {% endif %}
+            <a class="btn btn-outline-custom" href="{{ url_for('similarity.index') }}">
+<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+</a>
+</div>
+</div>
+<!-- SAMPLE LOADER BAR -->
+<div class="card-glass p-3 mb-4">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="sim_prepopulate">Pre-populate Alignment Benchmarks:</span></span>
+<div class="d-flex flex-wrap gap-2">
+<button class="btn btn-sm btn-outline-custom" onclick="
+                            document.getElementById('ref_name_input').value='Human TP53 Wildtype';
+                            document.getElementById('ref_seq_input').value='{{ samples.human_tp53.sequence }}';
+                            document.getElementById('qry_name_input').value='Human TP53 Mutant (Simulated SNVs)';
+                            let mutSeq = '{{ samples.human_tp53.sequence }}';
+                            document.getElementById('qry_seq_input').value = mutSeq.substring(0,25) + 'A' + mutSeq.substring(26,60) + 'T' + mutSeq.substring(61);
+                            showToast('Benchmark Loaded', 'Loaded TP53 Wildtype vs Simulated Mutant pair.', 'info');
+                        " type="button">
+<span data-i18n="sim_bench_tp53">TP53 Wildtype vs Mutant (Point SNVs)</span>
+</button>
+<button class="btn btn-sm btn-outline-custom" onclick="
+                            document.getElementById('ref_name_input').value='BRCA1 Exon 11';
+                            document.getElementById('ref_seq_input').value='{{ samples.brca1_exon11.sequence }}';
+                            document.getElementById('qry_name_input').value='BRCA1 Homolog';
+                            let bSeq = '{{ samples.brca1_exon11.sequence }}';
+                            document.getElementById('qry_seq_input').value = bSeq.substring(0,40) + 'CGTA' + bSeq.substring(44);
+                            showToast('Benchmark Loaded', 'Loaded BRCA1 sequence pair.', 'info');
+                        " type="button">
+<span data-i18n="sim_bench_brca1">BRCA1 Exon 11 Pair</span>
+</button>
+</div>
+</div>
+</div>
+<div class="row g-4 mb-4">
+<!-- INPUT FORM -->
+<div class="col-lg-5">
+<div class="card-glass p-4 h-100">
+<h5 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-intersect text-cyan me-2"></i> <span data-i18n="sim_dual_comp">Dual Sequence Comparison</span></h5>
+<form method="POST">
+<!-- Reference Sequence -->
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_name">Reference Sequence Name</label>
+<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_ref_name" data-i18n-value="sim_ref_default" id="ref_name_input" name="reference_name" placeholder="e.g. Reference Wildtype" type="text" value="{{ ref_name|default('') }}"/>
+<label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_seq">Reference DNA (A, T, G, C)</label>
+<textarea class="form-control form-control-custom" id="ref_seq_input" name="reference_sequence" placeholder="ATGCGTAC..." required="" rows="5">{{ ref_seq|default('') }}</textarea>
+</div>
+<!-- Query Sequence -->
+<div class="mb-4">
+<label class="form-label text-secondary small fw-medium" data-i18n="sim_query_name">Query / Sample Sequence Name</label>
+<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_query_name" data-i18n-value="sim_query_default" id="qry_name_input" name="query_name" placeholder="e.g. Query Sample" type="text" value="{{ query_name|default('') }}"/>
+<label class="form-label text-secondary small fw-medium" data-i18n="sim_query_seq">Query DNA (A, T, G, C)</label>
+<textarea class="form-control form-control-custom" id="qry_seq_input" name="query_sequence" placeholder="ATGAGTAC..." required="" rows="5">{{ query_seq|default('') }}</textarea>
+</div>
+<button class="btn btn-cyan-gradient w-100 py-2" type="submit">
+<i class="bi bi-arrow-left-right"></i> <span data-i18n="sim_run_align">Run Sequence Alignment</span>
+</button>
+</form>
+</div>
+</div>
+<!-- RESULTS SECTION -->
+<div class="col-lg-7">
+            {% if result %}
+            <div class="card-glass p-4 h-100">
+<div class="d-flex align-items-center justify-content-between mb-3">
+<div>
+<h5 class="fw-bold mb-0" style="color: var(--text-main);"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="sim_results">Alignment &amp; Similarity Metrics</span></h5>
+<span class="text-secondary small">{{ result.reference_name }} â†” {{ result.query_name }}</span>
+</div>
+                    {% if result.id %}
+                    <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
+                    {% endif %}
+                </div>
+<!-- Primary Comparison Metrics -->
+<div class="row g-3 mb-4">
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="sim_sim_idx">Similarity Index</span>
+<h3 class="text-emerald fw-bold mb-0 font-mono">{{ result.similarity_percentage }}%</h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="sim_diff_idx">Difference Index</span>
+<h3 class="text-danger fw-bold mb-0 font-mono">{{ result.difference_percentage }}%</h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="sim_matches">Exact Matches</span>
+<h3 class="fw-bold mb-0 font-mono" style="color: var(--text-main);">{{ result.match_count }} <small class="text-muted" data-i18n="gen_bp_5cfd" style="font-size:0.75rem;">bp</small></h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="sim_mismatches">Mismatches / Gaps</span>
+<h3 class="text-warning fw-bold mb-0 font-mono">{{ result.mismatch_count }} / {{ result.gap_count }}</h3>
+</div>
+</div>
+</div>
+<!-- Color-Coded Alignment View -->
+<h6 class="fw-bold mb-2" style="color: var(--text-main);"><i class="bi bi-text-left text-cyan me-1"></i> <span data-i18n="sim_map">Visual Pairwise Alignment Map</span></h6>
+<div class="d-flex gap-3 mb-2 small text-secondary">
+<span><span class="char-match px-1">|</span> <span data-i18n="sim_legend_match">Match</span></span>
+<span><span class="char-mismatch px-1" data-i18n="gen_x_0212">X</span> <span data-i18n="sim_legend_mismatch">Mismatch</span></span>
+<span><span class="char-gap px-1">-</span> <span data-i18n="sim_legend_gap">Gap / Indel</span></span>
+</div>
+<div class="alignment-container mb-3">
+                    {% for block in result.visual_blocks %}
+                    <div class="align-block">
+<div class="small text-muted mb-1"><span data-i18n="sim_coord">Coordinates</span>: {{ block.start_pos }} â€“ {{ block.end_pos }} bp</div>
+<!-- Ref Row -->
+<div class="align-row">
+<span class="align-label" data-i18n="sim_ref_label">REF:</span>
+<span class="align-seq">
+                                {% for token in block.tokens %}
+                                    <span class="{% if token.status == 'mismatch' %}char-mismatch{% elif token.status == 'gap' %}char-gap{% else %}text-secondary{% endif %}">{{ token.ref }}</span>
+                                {% endfor %}
+                            </span>
+</div>
+<!-- Match Row -->
+<div class="align-row">
+<span class="align-label" data-i18n="sim_match_label">MATCH:</span>
+<span class="align-seq font-mono text-emerald" style="letter-spacing: 0.18em;">{{ block.match_segment }}</span>
+</div>
+<!-- Query Row -->
+<div class="align-row">
+<span class="align-label" data-i18n="sim_query_label">QUERY:</span>
+<span class="align-seq">
+                                {% for token in block.tokens %}
+                                    <span class="{% if token.status == 'mismatch' %}char-mismatch{% elif token.status == 'gap' %}char-gap{% else %}text-secondary{% endif %}">{{ token.query }}</span>
+                                {% endfor %}
+                            </span>
+</div>
+</div>
+                    {% endfor %}
+                </div>
+</div>
+            {% else %}
+            <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
+<i class="bi bi-intersect text-muted" style="font-size: 3.5rem;"></i>
+<h5 class="fw-bold mt-3 mb-2" data-i18n="sim_awaiting" style="color: var(--text-main);">Awaiting Comparison Sequences</h5>
+<p class="text-secondary small mx-auto" data-i18n="sim_awaiting_desc" style="max-width: 420px;">
+                    Provide a reference sequence and a query sample sequence to compute Needleman-Wunsch global alignment and view nucleotide-by-nucleotide variation highlights.
+                </p>
+</div>
+            {% endif %}
+        </div>
+</div>
+</div>
+{% endblock %}

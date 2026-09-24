@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="login_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="auth-viewport d-flex align-items-stretch" style="min-height: calc(100vh - 75px); background-color: var(--bg-main);">
+<div class="container-fluid p-0">
+<div class="row g-0 h-100">
+<!-- LEFT COLUMN: DNA Background & Text (Hidden on mobile) -->
+<div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center position-relative auth-left-column" style="background: linear-gradient(135deg, rgba(243, 232, 255, 0.9) 0%, rgba(204, 251, 241, 0.9) 100%), url('{{ url_for('static', filename='images/dna-auth-background.jpg') }}') center/cover no-repeat; border-right: 1px solid var(--border-color, #E2E8F0);">
+<div class="text-center px-5 position-relative z-1">
+<div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4 bg-white" style="width: 80px; height: 80px; color: var(--primary, #6B46C1); font-size: 2.5rem; box-shadow: 0 10px 25px rgba(107, 70, 193, 0.2);">
+<i class="bi bi-robot"></i>
+</div>
+<h2 class="fw-bold mb-3" data-i18n="auto_e812a2" style="color: var(--primary, #6B46C1); font-size: 2.5rem;">DNAura</h2>
+<p class="fs-5" data-i18n="auto_3cb5af" style="color: var(--text-main, #334155); max-width: 450px; margin: 0 auto; line-height: 1.6;">
+                        Explore your genetic data, predict health risks, and manage your medical appointments with AI-driven insights.
+                    </p>
+</div>
+</div>
+<!-- RIGHT COLUMN: Login Form -->
+<div class="col-lg-6 d-flex align-items-center justify-content-center p-4 p-md-5 position-relative" style="background-color: var(--bg-card);">
+<div class="w-100" style="max-width: 450px;">
+<div class="text-center mb-5 d-lg-none">
+<!-- Mobile-only logo -->
+<div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 60px; height: 60px; color: var(--primary, #6B46C1); font-size: 1.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color, #E2E8F0); background-color: var(--bg-surface);">
+<i class="bi bi-robot"></i>
+</div>
+<h3 class="fw-bold mb-0" data-i18n="gen_DNAura_6a2b" style="color: var(--primary, #6B46C1);">DNAura</h3>
+</div>
+<div class="mb-4">
+<h4 class="fw-bold mb-2" data-i18n="login_title" style="color: var(--text-main, #1E293B);">Welcome Back</h4>
+<p class="text-secondary" data-i18n="gen_sign_in_to_continue_7cd3">Sign in to continue to your dashboard.</p>
+</div>
+<form action="{% if request.args.get('next') %}{{ url_for('auth.login', next=request.args.get('next')) }}{% else %}{{ url_for('auth.login') }}{% endif %}" method="POST">
+<div class="mb-4">
+<label class="form-label small fw-semibold" data-i18n="login_label_identifier" style="color: var(--text-secondary);">Email or Username</label>
+<div class="input-group input-group-lg">
+<span class="input-group-text border-end-0" style="background-color: var(--bg-surface-elevated); color: var(--secondary); border-color: var(--border-color);"><i class="bi bi-person"></i></span>
+<input autofocus="" class="form-control border-start-0 ps-0" data-i18n-placeholder="login_ph_identifier" name="identifier" placeholder="name@example.com" required="" style="background-color: var(--bg-surface-elevated); color: var(--text-main); border-color: var(--border-color); box-shadow: none;" type="text" value="{{ identifier|default('') }}"/>
+</div>
+</div>
+<div class="mb-4">
+<label class="form-label small fw-semibold" data-i18n="reg_label_password" style="color: var(--text-secondary);">Password</label>
+<div class="input-group input-group-lg">
+<span class="input-group-text border-end-0" style="background-color: var(--bg-surface-elevated); color: var(--secondary); border-color: var(--border-color);"><i class="bi bi-lock"></i></span>
+<input class="form-control border-start-0 border-end-0 px-0" data-i18n-placeholder="login_ph_password" id="login_password" name="password" placeholder="••••••••" required="" style="background-color: var(--bg-surface-elevated); color: var(--text-main); border-color: var(--border-color); box-shadow: none;" type="password"/>
+<button class="btn border-start-0 password-toggle-btn" data-i18n-title="reg_toggle_password" data-target-input="login_password" style="background-color: var(--bg-surface-elevated); border-color: var(--border-color); color: var(--text-muted);" title="Toggle Password" type="button">
+<i class="bi bi-eye"></i>
+</button>
+</div>
+</div>
+<div class="d-flex align-items-center justify-content-between mb-5">
+<div class="form-check">
+<input class="form-check-input" id="remember" name="remember" style="cursor: pointer;" type="checkbox"/>
+<label class="form-check-label small" data-i18n="login_remember_me" for="remember" style="color: var(--text-secondary, #64748B); cursor: pointer;">Remember Me</label>
+</div>
+</div>
+<button class="btn w-100 py-3 fw-bold text-white shadow-sm" data-i18n="nav_login" onmouseout="this.style.transform='translateY(0)';" onmouseover="this.style.transform='translateY(-2px)';" style="background-color: var(--primary, #6B46C1); border-radius: 10px; font-size: 1.1rem; transition: transform 0.2s ease;" type="submit">
+<i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                        </button>
+</form>
+<div class="text-center mt-5 small" style="color: var(--text-secondary, #64748B);">
+<span data-i18n="login_no_account">Don't have an account?</span>
+<a class="fw-bold ms-1 text-decoration-none" data-i18n="nav_register" href="{{ url_for('auth.register') }}" style="color: var(--secondary, #0D9488);">Create Account</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>DNA ANALYSIS AI — Administrator Login</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet"/></head>
+<body class="admin-login">
+<div class="login-grid"></div>
+<div aria-hidden="true" class="login-dna"><div class="dna-orbit"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+<div class="login-card">
+<div class="login-brand"><div class="brand-icon"><i class="bi bi-dna"></i></div><div><b data-i18n="sidebar_dna_analysis">DNA ANALYSIS <span data-i18n="gen_ai_0a40">AI</span></b><small data-i18n="gen_dna_sequence_platfor_81eb">DNA SEQUENCE PLATFORM</small></div></div>
+<div class="security-badge" data-i18n="auto_fc4684"><i class="bi bi-shield-lock-fill"></i> RESTRICTED ADMINISTRATOR ACCESS</div>
+<h1 data-i18n="gen_admin_control_center_ff7e">Admin Control Center</h1><p data-i18n="gen_authenticate_to_moni_4037">Authenticate to monitor users, DNA analysis activity and predictions.</p>
+  {% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="admin-alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+  <form method="post">
+<label data-i18n="gen_administrator_id_544d">Administrator ID</label><div class="input-wrap"><i class="bi bi-person-badge"></i><input autocomplete="username" autofocus="" name="username" placeholder="Enter admin username" required=""/></div>
+<label data-i18n="gen_secure_password_7b62">Secure Password</label><div class="input-wrap"><i class="bi bi-key"></i><input autocomplete="current-password" name="password" placeholder="Enter admin password" required="" type="password"/></div>
+<button class="primary-btn w-100" data-i18n="gen_secure_login_d5e2" type="submit"><i class="bi bi-shield-check"></i> Secure Login</button>
+</form>
+<div class="login-note" data-i18n="auto_153a0a"><i class="bi bi-lock-fill"></i> Admin routes are isolated from the user interface.</div>
+<a class="back-link" data-i18n="gen_return_to_dna_analys_b0d0" href="{{ url_for('welcome') }}"><i class="bi bi-arrow-left"></i> Return to DNA Analysis AI</a>
+</div>
+</body></html>

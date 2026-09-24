@@ -1,0 +1,14 @@
+﻿{% extends "admin/base.html" %}{% block title %}Admin — Analytics{% endblock %}{% block page_title %}Analytics{% endblock %}
+{% block content %}<div class="page-intro"><div><span class="eyebrow" data-i18n="gen_system_telemetry_db74">SYSTEM TELEMETRY</span><h2 data-i18n="gen_platform_analytics_66b5">Platform Analytics</h2><p data-i18n="gen_operational_trends_a_0c3d">Operational trends across users, DNA processing and AI tools.</p></div></div>
+<div class="row g-4"><div class="col-xl-7"><div class="panel"><div class="panel-head"><h3 data-i18n="gen_daily_users_3c04">Daily Users</h3></div><div class="chart-wrap"><canvas id="usersChart"></canvas></div></div></div>
+<div class="col-xl-5"><div class="panel"><div class="panel-head"><h3 data-i18n="gen_tool_activity_47b1">Tool Activity</h3></div><div class="chart-wrap"><canvas id="moduleChart"></canvas></div></div></div>
+<div class="col-xl-6"><div class="panel"><div class="panel-head"><h3 data-i18n="gen_daily_dna_uploads_123f">Daily DNA Uploads</h3></div><div class="chart-wrap"><canvas id="seqChart"></canvas></div></div></div>
+<div class="col-xl-6"><div class="panel"><div class="panel-head"><h3 data-i18n="gen_risk_mix_a866">Risk Mix</h3></div><div class="chart-wrap"><canvas id="riskChart"></canvas></div></div></div></div>
+{% endblock %}{% block scripts %}<script>
+const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aab8ca'}}},scales:{x:{ticks:{color:'#7f8da3'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#7f8da3'},grid:{color:'rgba(255,255,255,.04)'}}}};
+const du={{ daily_users|tojson }}, ds={{ daily_sequences|tojson }}, mods={{ modules|tojson }}, risks={{ risk|tojson }};
+new Chart(document.getElementById('usersChart'),{type:'line',data:{labels:du.map(x=>x.day),datasets:[{label:'Users',data:du.map(x=>x.total),tension:.35,fill:true}]},options:chartOpts});
+new Chart(document.getElementById('seqChart'),{type:'bar',data:{labels:ds.map(x=>x.day),datasets:[{label:'DNA uploads',data:ds.map(x=>x.total)}]},options:chartOpts});
+new Chart(document.getElementById('moduleChart'),{type:'bar',data:{labels:mods.map(x=>x.module),datasets:[{label:'Records',data:mods.map(x=>x.total)}]},options:{...chartOpts,indexAxis:'y'}});
+new Chart(document.getElementById('riskChart'),{type:'doughnut',data:{labels:risks.map(x=>x.risk_category),datasets:[{data:risks.map(x=>x.total),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aab8ca'}}}}});
+</script>{% endblock %}

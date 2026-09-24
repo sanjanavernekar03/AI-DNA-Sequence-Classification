@@ -1,0 +1,102 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Doctors at {{ hospital.name }} â€” DNAura{% endblock %}
+
+{% block extra_css %}
+<style>
+.doctor-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.doctor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(23, 105, 170, 0.08) !important;
+}
+.doctor-avatar {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 2px solid var(--border-color, #D9E1EA);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+<!-- Breadcrumb & Header -->
+<div class="mb-4">
+<a class="text-decoration-none small fw-semibold mb-2 d-inline-block" data-i18n="gen_back_to_hospitals_203d" href="{{ url_for('hospitals.index') }}" style="color: var(--primary, #1769AA);">
+<i class="bi bi-arrow-left me-1"></i> Back to Hospitals
+        </a>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+<div>
+<h2 class="fw-bold mb-1" data-i18n="gen_medical_specialists_0f23" style="color: var(--text-main, #172033);">
+<i class="bi bi-people" style="color: var(--primary, #1769AA);"></i> Medical Specialists
+                </h2>
+<p class="small mb-0" style="color: var(--text-secondary, #536174);"><i class="bi bi-building me-1"></i>{{ hospital.name }} â€” {{ hospital.address }}</p>
+</div>
+<span class="badge px-3 py-2 fw-semibold" data-i18n="gen_demo_profiles_1191" style="font-size:0.8rem; background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2;">
+<i class="bi bi-info-circle me-1"></i> Demo Profiles
+            </span>
+</div>
+</div>
+<!-- DOCTORS GRID -->
+<div class="row g-4">
+        {% if doctors %}
+            {% for doc in doctors %}
+            <div class="col-md-6 col-lg-4">
+<div class="card border-0 shadow-sm h-100 p-4 doctor-card" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="d-flex flex-column h-100 justify-content-between">
+<div>
+<div class="d-flex align-items-center gap-3 mb-3">
+<img alt="{{ doc.full_name }}" class="rounded-circle doctor-avatar shadow-sm" src="{{ doc.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
+<div>
+<h6 class="fw-bold mb-0" style="color: var(--text-main, #172033);">{{ doc.full_name }}</h6>
+<span class="badge mt-1 fw-semibold" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ doc.specialty }}</span>
+</div>
+</div>
+<div class="p-3 rounded-3 mb-3" style="background: var(--bg-surface-elevated, #F1F5F9); border: 1px solid var(--border-color, #D9E1EA);">
+<div class="d-flex justify-content-between small mb-2">
+<span data-i18n="doc_lbl_qual" style="color: var(--text-secondary, #536174);"><i class="bi bi-mortarboard me-1" style="color: var(--primary, #1769AA);"></i>Qualification:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.qualification }}</span>
+</div>
+<div class="d-flex justify-content-between small mb-2">
+<span data-i18n="doc_lbl_exp" style="color: var(--text-secondary, #536174);"><i class="bi bi-briefcase me-1 text-warning"></i>Experience:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.experience_years }} Years</span>
+</div>
+<div class="d-flex justify-content-between small mb-2">
+<span data-i18n="doc_lbl_avail" style="color: var(--text-secondary, #536174);"><i class="bi bi-calendar-week me-1 text-success"></i>Available:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.availability_days }}</span>
+</div>
+<div class="d-flex justify-content-between small">
+<span data-i18n="doc_lbl_mode" style="color: var(--text-secondary, #536174);"><i class="bi bi-camera-video me-1" style="color: #6D28D9;"></i>Mode:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.consultation_type }}</span>
+</div>
+</div>
+<div class="mb-4">
+<label class="form-label small fw-medium mb-2" data-i18n="doc_avail_slots" style="color: var(--text-secondary, #536174);">Available Time Slots:</label>
+<div class="d-flex flex-wrap gap-2">
+                                    {% for slot in doc.available_slots %}
+                                    <span class="badge fw-medium" style="background: #E8F5E9; color: #2E7D5B; border: 1px solid #C8E6C9;">
+<i class="bi bi-clock me-1"></i>{{ slot }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+</div>
+</div>
+<a class="btn w-100 py-2 fw-medium text-white mt-auto" data-i18n="hosp_btn_book" href="{{ url_for('appointments.book', hospital_id=hospital.id, doctor_id=doc.id) }}" style="background-color: var(--primary, #1769AA); border-radius: 8px;">
+<i class="bi bi-calendar-plus me-1"></i> Book Appointment
+                        </a>
+</div>
+</div>
+</div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+<i class="bi bi-person-x fs-1 text-muted mb-3 d-block"></i>
+<h5 class="fw-bold" data-i18n="doc_no_profiles" style="color: var(--text-main, #172033);">No Doctor Profiles Available</h5>
+<p class="small" data-i18n="doc_no_specs" style="color: var(--text-secondary, #536174);">No medical specialists currently registered for this hospital.</p>
+</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}My Appointments — DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="appt_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<!-- Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+<div>
+<h2 class="fw-bold mb-1" style="color: var(--text-main, #172033);">
+<i class="bi bi-journal-check" style="color: var(--primary, #1769AA);"></i> <span data-i18n="sidebar_my_appts">My Appointments</span>
+</h2>
+<p class="small mb-0" data-i18n="appt_sub" style="color: var(--text-secondary, #536174);">View and manage your scheduled doctor consultations</p>
+</div>
+<a class="btn text-white fw-medium px-4 py-2" href="{{ url_for('hospitals.index') }}" style="background-color: var(--primary, #1769AA); border-radius: 8px;">
+<i class="bi bi-calendar-plus me-1"></i> <span data-i18n="sidebar_doctor_booking">Book New Appointment</span>
+</a>
+</div>
+<!-- APPOINTMENTS TABLE -->
+<div class="card border-0 shadow-sm p-4" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+<thead>
+<tr style="border-bottom: 2px solid var(--border-color, #D9E1EA);">
+<th class="small fw-semibold" data-i18n="appt_doc_spec" style="color: var(--text-muted, #718096);">Doctor &amp; Specialty</th>
+<th class="small fw-semibold" data-i18n="appt_hosp" style="color: var(--text-muted, #718096);">Hospital</th>
+<th class="small fw-semibold" data-i18n="hist_datetime" style="color: var(--text-muted, #718096);">Date &amp; Time</th>
+<th class="small fw-semibold" data-i18n="appt_patient" style="color: var(--text-muted, #718096);">Patient</th>
+<th class="small fw-semibold" data-i18n="appt_reason" style="color: var(--text-muted, #718096);">Reason</th>
+<th class="small fw-semibold" data-i18n="appt_status" style="color: var(--text-muted, #718096);">Status</th>
+<th class="text-end small fw-semibold" data-i18n="rep_actions" style="color: var(--text-muted, #718096);">Actions</th>
+</tr>
+</thead>
+<tbody style="border-top: none;">
+                    {% if appointments %}
+                        {% for a in appointments %}
+                        <tr style="border-bottom: 1px solid var(--border-color, #D9E1EA);">
+<td>
+<div class="d-flex align-items-center gap-3">
+<img alt="" class="rounded-circle shadow-sm" src="{{ a.doctor_photo or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}" style="width:40px; height:40px; object-fit:cover; border: 1px solid var(--border-color, #D9E1EA);"/>
+<div>
+<div class="fw-bold" style="color: var(--text-main, #172033);">{{ a.doctor_name }}</div>
+<small style="color: var(--primary, #1769AA); font-weight: 500;">{{ a.doctor_specialty }}</small>
+</div>
+</div>
+</td>
+<td>
+<div class="fw-medium small" style="color: var(--text-main, #172033);">{{ a.hospital_name }}</div>
+<small style="color: var(--text-secondary, #536174);">{{ a.hospital_address }}</small>
+</td>
+<td>
+<div class="small fw-medium" style="color: var(--text-main, #172033);"><i class="bi bi-calendar3 me-1" style="color: var(--primary, #1769AA);"></i>{{ a.appointment_date }}</div>
+<small class="fw-bold" style="color: #E65100;"><i class="bi bi-clock me-1"></i>{{ a.appointment_time }}</small>
+</td>
+<td>
+<div class="small fw-medium" style="color: var(--text-main, #172033);">{{ a.patient_name }}</div>
+<small style="color: var(--text-secondary, #536174);">{{ a.phone }}</small>
+</td>
+<td class="small" style="color: var(--text-secondary, #536174); max-width: 180px;">
+                                {{ a.reason_for_visit }}
+                            </td>
+<td>
+                                {% if a.status == 'Confirmed' %}
+                                    <span class="badge fw-semibold px-2 py-1" data-i18n="gen_confirmed_205b" style="background: #E8F5E9; color: #2E7D5B; border: 1px solid #C8E6C9;"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
+                                {% elif a.status == 'Cancelled' %}
+                                    <span class="badge fw-semibold px-2 py-1" data-i18n="gen_cancelled_a149" style="background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2;"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
+                                {% else %}
+                                    <span class="badge fw-semibold px-2 py-1" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ a.status }}</span>
+                                {% endif %}
+                            </td>
+<td class="text-end">
+                                {% if a.status == 'Confirmed' %}
+                                <form action="{{ url_for('appointments.cancel', appointment_id=a.id) }}" class="d-inline" method="POST" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+<button class="btn btn-sm btn-outline-danger px-3" data-i18n="btn_cancel" style="border-radius: 6px;" type="submit">
+                                        Cancel
+                                    </button>
+</form>
+                                {% else %}
+                                <span class="text-secondary small" data-i18n="auto_d5fd8e">—</span>
+                                {% endif %}
+                            </td>
+</tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+<td class="text-center py-5" colspan="7" style="color: var(--text-secondary, #536174);">
+<i class="bi bi-calendar-x fs-2 d-block mb-3" style="color: var(--border-color, #D9E1EA);"></i>
+<span class="fw-medium" data-i18n="gen_you_have_no_schedule_0d14" style="color: var(--text-main, #172033);">You have no scheduled appointments yet.</span>
+</td>
+</tr>
+                    {% endif %}
+                </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

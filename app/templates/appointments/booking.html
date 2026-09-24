@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment â€” DNAura{% endblock %}
+
+{% block extra_css %}
+<style>
+.doctor-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.doctor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(23, 105, 170, 0.08) !important;
+}
+.doctor-avatar {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 2px solid var(--border-color, #D9E1EA);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<span data-i18n="appt_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<!-- Breadcrumb & Header -->
+<div class="mb-4">
+<a class="text-decoration-none small fw-semibold mb-2 d-inline-block" data-i18n="gen_back_to_hospitals_203d" href="{{ url_for('hospitals.index') }}" style="color: var(--primary, #1769AA);">
+<i class="bi bi-arrow-left me-1"></i> Back to Hospitals
+        </a>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+<div>
+<h2 class="fw-bold mb-1" data-i18n="hosp_btn_book" style="color: var(--text-main, #172033);">
+<i class="bi bi-calendar-plus" style="color: var(--primary, #1769AA);"></i> Book Appointment
+                </h2>
+                {% if hospital %}
+                <p class="small mb-0" style="color: var(--text-secondary, #536174);"><i class="bi bi-hospital me-1"></i>{{ hospital.name }} â€” {{ hospital.address }}</p>
+                {% endif %}
+            </div>
+</div>
+</div>
+
+    {% if not doctor %}
+    <!-- STEP 1: SELECT DOCTOR -->
+<h5 class="fw-bold mb-3" data-i18n="gen_step_1_select_a_spec_d1d7" style="color: var(--text-main, #172033);">Step 1: Select a Specialist</h5>
+<div class="row g-4">
+        {% if doctors %}
+            {% for doc in doctors %}
+            <div class="col-md-6 col-lg-4">
+<div class="card border-0 shadow-sm h-100 p-4 doctor-card" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="d-flex flex-column h-100 justify-content-between">
+<div>
+<div class="d-flex align-items-center gap-3 mb-3">
+<img alt="{{ doc.full_name }}" class="rounded-circle doctor-avatar shadow-sm" src="{{ doc.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
+<div>
+<h6 class="fw-bold mb-0" style="color: var(--text-main, #172033);">{{ doc.full_name }}</h6>
+<span class="badge mt-1 fw-semibold" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ doc.specialty }}</span>
+</div>
+</div>
+<div class="p-3 rounded-3 mb-3" style="background: var(--bg-surface-elevated, #F1F5F9); border: 1px solid var(--border-color, #D9E1EA);">
+<div class="d-flex justify-content-between small mb-2">
+<span data-i18n="doc_lbl_exp" style="color: var(--text-secondary, #536174);"><i class="bi bi-briefcase me-1 text-warning"></i>Experience:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.experience_years }} Years</span>
+</div>
+<div class="d-flex justify-content-between small mb-2">
+<span data-i18n="doc_lbl_avail" style="color: var(--text-secondary, #536174);"><i class="bi bi-calendar-week me-1 text-success"></i>Available:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.availability_days }}</span>
+</div>
+<div class="d-flex justify-content-between small">
+<span data-i18n="doc_lbl_mode" style="color: var(--text-secondary, #536174);"><i class="bi bi-camera-video me-1" style="color: #6D28D9;"></i>Mode:</span>
+<span class="fw-medium" style="color: var(--text-main, #172033);">{{ doc.consultation_type }}</span>
+</div>
+</div>
+<div class="mb-4">
+<label class="form-label small fw-medium mb-2" data-i18n="doc_avail_slots" style="color: var(--text-secondary, #536174);">Available Time Slots:</label>
+<div class="d-flex flex-wrap gap-2">
+                                    {% for slot in doc.available_slots %}
+                                    <span class="badge fw-medium" style="background: #E8F5E9; color: #2E7D5B; border: 1px solid #C8E6C9;">
+<i class="bi bi-clock me-1"></i>{{ slot }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+</div>
+</div>
+<a class="btn w-100 py-2 fw-medium text-white mt-auto" data-i18n="gen_select_doctor_7078" href="{{ url_for('appointments.book', hospital_id=hospital.id, doctor_id=doc.id) }}" style="background-color: var(--primary, #1769AA); border-radius: 8px;">
+<i class="bi bi-calendar-plus me-1"></i> Select Doctor
+                        </a>
+</div>
+</div>
+</div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+<i class="bi bi-person-x fs-1 text-muted mb-3 d-block"></i>
+<h5 class="fw-bold" data-i18n="doc_no_profiles" style="color: var(--text-main, #172033);">No Doctor Profiles Available</h5>
+<p class="small" data-i18n="doc_no_specs" style="color: var(--text-secondary, #536174);">No medical specialists currently registered for this hospital.</p>
+</div>
+        {% endif %}
+    </div>
+    
+    {% else %}
+    <!-- STEP 2: BOOKING FORM -->
+<h5 class="fw-bold mb-3" data-i18n="gen_step_2_patient_detai_6af9" style="color: var(--text-main, #172033);">Step 2: Patient Details &amp; Schedule</h5>
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<div class="card border-0 shadow-sm p-4 p-md-5" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+<div class="p-3 rounded-3 mb-4 d-flex align-items-center gap-3" style="background: var(--bg-surface-elevated, #F1F5F9); border: 1px solid var(--border-color, #D9E1EA);">
+<img alt="{{ doctor.full_name }}" class="rounded-circle doctor-avatar shadow-sm" src="{{ doctor.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
+<div>
+<h6 class="fw-bold mb-0" style="color: var(--text-main, #172033);">{{ doctor.full_name }} <span class="badge ms-2" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ doctor.specialty }}</span></h6>
+<small style="color: var(--text-secondary, #536174);"><i class="bi bi-hospital me-1"></i>{{ hospital.name }}</small>
+</div>
+</div>
+<form action="{{ url_for('appointments.book') }}" method="POST">
+<input name="hospital_id" type="hidden" value="{{ hospital.id if hospital else '' }}"/>
+<input name="doctor_id" type="hidden" value="{{ doctor.id if doctor else '' }}"/>
+<input name="patient_email" type="hidden" value="{{ user.email|default('') }}"/>
+<div class="row g-3 mb-3">
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="appt_date" style="color: var(--text-secondary, #536174);">Appointment Date <span class="text-danger">*</span></label>
+<input class="form-control" name="appointment_date" required="" style="border-color: var(--border-color, #D9E1EA);" type="date"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="appt_time_slot" style="color: var(--text-secondary, #536174);">Preferred Time Slot <span class="text-danger">*</span></label>
+<select class="form-select" name="appointment_time" required="" style="border-color: var(--border-color, #D9E1EA);">
+<option data-i18n="appt_select_slot" value="">Select Time Slot</option>
+                                {% if doctor and doctor.available_slots %}
+                                    {% for slot in doctor.available_slots %}
+                                    <option value="{{ slot }}">{{ slot }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option data-i18n="gen_09_00_am_d3c5" value="09:00 AM">09:00 AM</option>
+<option data-i18n="gen_10_30_am_b351" value="10:30 AM">10:30 AM</option>
+<option data-i18n="gen_01_30_pm_170d" value="01:30 PM">01:30 PM</option>
+<option data-i18n="gen_03_30_pm_8675" value="03:30 PM">03:30 PM</option>
+                                {% endif %}
+                            </select>
+</div>
+</div>
+<div class="row g-3 mb-3">
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="patient_name" style="color: var(--text-secondary, #536174);">Patient Full Name <span class="text-danger">*</span></label>
+<input class="form-control" name="patient_name" required="" style="border-color: var(--border-color, #D9E1EA);" type="text" value="{{ user.full_name }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="contact_phone" style="color: var(--text-secondary, #536174);">Contact Phone Number <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_phone" name="phone" placeholder="+1 (555) 000-0000" required="" style="border-color: var(--border-color, #D9E1EA);" type="tel" value="{{ user.phone|default('') }}"/>
+</div>
+</div>
+<div class="mb-3">
+<label class="form-label small fw-medium" data-i18n="gen_reason_for_visit_ced9" style="color: var(--text-secondary, #536174);">Reason for Visit <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="appt_ph_reason" name="reason_for_visit" placeholder="e.g. General checkup, Health review" required="" style="border-color: var(--border-color, #D9E1EA);" type="text"/>
+</div>
+<div class="mb-4">
+<label class="form-label small fw-medium" data-i18n="booking_notes" style="color: var(--text-secondary, #536174);">Additional Notes (Optional)</label>
+<textarea class="form-control" data-i18n-placeholder="appt_ph_notes" name="notes" placeholder="Any specific requirements..." rows="2" style="border-color: var(--border-color, #D9E1EA);"></textarea>
+</div>
+<div class="d-flex gap-2">
+<a class="btn btn-outline-secondary px-4 py-2 fw-medium" data-i18n="reg_btn_back" href="{{ url_for('appointments.book', hospital_id=hospital.id) }}" style="border-color: var(--border-color, #D9E1EA);">
+                            Back
+                        </a>
+<button class="btn text-white flex-grow-1 py-2 fw-medium" data-i18n="gen_confirm_appointment_a586" style="background-color: var(--primary, #1769AA); border-radius: 8px;" type="submit">
+<i class="bi bi-check2-circle me-1"></i> Confirm Appointment
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+    {% endif %}
+</div>
+{% endblock %}

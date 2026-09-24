@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Risk Prediction â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="dis_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+<div>
+<div class="d-flex align-items-center gap-2 mb-1">
+<span class="badge badge-t" data-i18n="welcome_mod5_badge"><i class="bi bi-heart-pulse me-1"></i> Disease Prediction</span>
+<h2 class="fw-bold mb-0" data-i18n="dis_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Disease Risk Prediction</h2>
+</div>
+<p class="small mb-0" data-i18n="dis_desc" style="color: var(--text-secondary, #475569);">Predicts disease risk patterns across 5 target classes (Healthy, Cancer, Sickle Cell Disease, Cystic Fibrosis, Huntington's Disease).</p>
+</div>
+<div class="d-flex gap-2">
+            {% if result and result.id %}
+            <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='disease', analysis_id=result.id) }}">
+<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+</a>
+            {% endif %}
+            <a class="btn btn-outline-custom" href="{{ url_for('disease.index') }}">
+<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+</a>
+</div>
+</div>
+<!-- PROMINENT MEDICAL DISCLAIMER BANNER -->
+<div class="disclaimer-banner mb-4">
+<i class="bi bi-exclamation-octagon-fill fs-4 flex-shrink-0 text-danger"></i>
+<div data-i18n="auto_78be80">
+<strong class="d-block text-dark mb-1" data-i18n="gen_mandatory_academic_r_36f3">Mandatory Academic &amp; Research Notice:</strong>
+            This system provides AI-based predictions for academic and research purposes only. It is not a medical diagnostic system and should not be used to make medical decisions. Always consult board-certified clinical geneticists.
+        </div>
+</div>
+<!-- SAMPLE LOADER BAR -->
+<div class="card-glass p-3 mb-4">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Pre-populate 5 Disease Class Benchmarks:</span></span>
+<div class="d-flex flex-wrap gap-2">
+                {% for key, s in samples.items() %}
+                <button class="btn btn-sm btn-outline-custom" data-i18n="dis_cat_{{ (s.disease_target or s.name)|lower|replace(' ', '_')|replace("'", '') }}" data-sample-key="{{ key }}" data-seq-name="{{ s.name }}" data-seq-val="{{ s.sequence }}" data-target-input="sequence_input" data-target-name="sequence_name_input" type="button">
+                    {{ s.disease_target or s.name[:20] }}
+                </button>
+                {% endfor %}
+            </div>
+</div>
+</div>
+<div class="row g-4 mb-4">
+<!-- INPUT FORM -->
+<div class="col-lg-5">
+<div class="card-glass p-4 h-100">
+<h5 class="text-dark fw-bold mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i> <span data-i18n="dis_input_title">Disease Predictor Input</span></h5>
+<form enctype="multipart/form-data" method="POST">
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="dis_sample_id">Sample Identifier</label>
+<input class="form-control form-control-custom" data-i18n-placeholder="dis_sample_id" data-i18n-value="sim_ref_default" id="sequence_name_input" name="sequence_name" placeholder="e.g. Clinical Specimen #402" type="text" value="{{ sequence_name|default('DNA Sequence') }}"/>
+</div>
+<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-1">
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="mod_raw_dna">Raw DNA Sequence (A, T, G, C)</label>
+<span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
+</div>
+<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
+</div>
+<div class="mb-4">
+<label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
+<input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
+</div>
+<button class="btn btn-primary-gradient w-100 py-2" style="background: linear-gradient(135deg, #EF4444, #DC2626);" type="submit">
+<i class="bi bi-activity"></i> <span data-i18n="dis_run_btn">Predict Disease Category</span>
+</button>
+</form>
+</div>
+</div>
+<!-- RESULTS SECTION -->
+<div class="col-lg-7">
+            {% if result %}
+            <div class="card-glass p-4 h-100">
+<div class="d-flex align-items-center justify-content-between mb-3">
+<div>
+<h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="dis_pred_out">Prediction Output</span></h5>
+<span class="text-secondary small">{{ result.sequence_name }}</span>
+</div>
+                    {% if result.id %}
+                    <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
+                    {% endif %}
+                </div>
+<!-- Primary Prediction Card -->
+<div class="p-4 rounded-3 card-glass mb-4 text-center" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.12) 100%); border-color: rgba(239, 68, 68, 0.4);">
+<span class="text-secondary small text-uppercase letter-spacing-1 fw-bold d-block mb-1" data-i18n="dis_pred_cat">Predicted Disease Category</span>
+<h2 class="text-dark fw-bold brand-font mb-2">{{ result.predicted_category }}</h2>
+<div class="d-flex justify-content-center align-items-center gap-3">
+<div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill card-glass">
+<span class="text-secondary small" data-i18n="dis_pred_prob">Prediction Probability:</span>
+<strong class="text-dark font-mono">{{ result.probability }}%</strong>
+</div>
+<div>
+                            {% if result.predicted_category == 'Healthy' %}
+                            <span class="badge badge-risk-low px-3 py-2 fs-6" data-i18n="dis_healthy">NORMAL / HEALTHY</span>
+                            {% elif result.risk_category == 'High' %}
+                            <span class="badge badge-risk-high px-3 py-2 fs-6" data-i18n="dis_high_risk">HIGH PATHOGENIC RISK</span>
+                            {% else %}
+                            <span class="badge badge-risk-mod px-3 py-2 fs-6" data-i18n="dis_mod_risk">MODERATE RISK TIER</span>
+                            {% endif %}
+                        </div>
+</div>
+</div>
+<!-- 5-Class Probability Spectrum -->
+                {% if result.probabilities %}
+                <h6 class="text-dark fw-bold mb-2"><i class="bi bi-bar-chart-steps text-danger me-1"></i> <span data-i18n="dis_prob_spectrum">Full 5-Class Probability Spectrum</span></h6>
+<div class="d-flex flex-column gap-2 mb-4">
+                    {% for cname, pval in result.probabilities.items() %}
+                    <div>
+<div class="d-flex justify-content-between text-secondary small mb-1">
+<span class="{% if cname == result.predicted_category %}text-dark fw-bold{% endif %}">{{ cname }}</span>
+<span class="font-mono {% if cname == result.predicted_category %}text-danger fw-bold{% endif %}">{{ pval }}%</span>
+</div>
+<div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
+<div aria-valuemax="100" aria-valuemin="0" aria-valuenow="{{ pval }}" class="progress-bar {% if cname == result.predicted_category %}bg-danger{% else %}bg-secondary{% endif %}" role="progressbar" style="width: {{ pval }}%;"></div>
+</div>
+</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Model Information -->
+<div class="p-3 rounded-3 card-glass" style="background: rgba(0,0,0,0.25);">
+<div class="row g-2 small text-secondary">
+<div class="col-sm-6">
+<strong data-i18n="dis_algo_label">Algorithm:</strong> {{ result.model_name }}
+                        </div>
+<div class="col-sm-6">
+<strong data-i18n="dis_targets_label">Target Classes:</strong> <span data-i18n="dis_targets_val">5 (Healthy, Cancer, Sickle Cell, CF, Huntington's)</span>
+</div>
+                        {% if result.metrics %}
+                        <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-25">
+<strong data-i18n="dis_accuracy_label">Test Evaluation Accuracy:</strong> <span class="text-emerald fw-bold">{{ result.metrics.accuracy }}%</span> | <span data-i18n="dis_f1_hdr">F1-Score</span>: <span class="text-cyan fw-bold">{{ result.metrics.f1_score }}%</span>
+</div>
+                        {% endif %}
+                    </div>
+</div>
+</div>
+            {% else %}
+            <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
+<i class="bi bi-heart-pulse text-muted" style="font-size: 3.5rem;"></i>
+<h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="dis_awaiting_title">Awaiting Disease Risk Sequence Input</h5>
+<p class="text-secondary small mx-auto" data-i18n="dis_awaiting_desc" style="max-width: 420px;">
+                    Provide a DNA sequence to predict disease categories across Healthy, Cancer, Sickle Cell Disease, Cystic Fibrosis, and Huntington's Disease using the trained Random Forest Classifier.
+                </p>
+</div>
+            {% endif %}
+        </div>
+</div>
+<!-- MODEL PERFORMANCE & EVALUATION SECTION -->
+    {% if result and result.metrics %}
+    <div class="card-glass p-4 mb-4">
+<h5 class="text-dark fw-bold mb-3" data-i18n="gen_disease_prediction_m_f472"><i class="bi bi-clipboard-data-fill text-cyan me-2"></i> Disease Prediction Model Performance &amp; Validation</h5>
+<!-- Metrics Chips -->
+<div class="row g-3 mb-4">
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="dis_test_acc">Test Accuracy</span>
+<h3 class="text-emerald fw-bold mb-0 font-mono">{{ result.metrics.accuracy }}%</h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="dis_f1">Weighted F1-Score</span>
+<h3 class="text-cyan fw-bold mb-0 font-mono">{{ result.metrics.f1_score }}%</h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="dis_prec">Weighted Precision</span>
+<h3 class="text-purple fw-bold mb-0 font-mono">{{ result.metrics.precision }}%</h3>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1" data-i18n="dis_recall">Weighted Recall</span>
+<h3 class="text-warning fw-bold mb-0 font-mono">{{ result.metrics.recall }}%</h3>
+</div>
+</div>
+</div>
+<div class="row g-4">
+<!-- 5x5 Confusion Matrix -->
+<div class="col-lg-6">
+<div class="p-3 rounded-3 card-glass h-100">
+<h6 class="text-dark fw-bold mb-2 small" data-i18n="gen_5x5_confusion_matrix_726b"><i class="bi bi-grid-3x3 text-warning me-1"></i> 5x5 Confusion Matrix (Held-out Test Split)</h6>
+                    {% if result.confusion_matrix %}
+                    <div class="table-responsive">
+<table class="table-custom text-center" style="font-size:0.78rem;">
+<thead>
+<tr>
+<th class="text-start" data-i18n="gen_actual_pred_b3cc">Actual \ Pred</th>
+                                    {% for lbl in result.confusion_matrix.labels %}
+                                    <th>{{ lbl[:4] }}</th>
+                                    {% endfor %}
+                                </tr>
+</thead>
+<tbody>
+                                {% for row in result.confusion_matrix.matrix %}
+                                {% set outer_idx = loop.index0 %}
+                                <tr>
+<td class="text-start fw-bold text-secondary">{{ result.confusion_matrix.labels[outer_idx] }}</td>
+                                    {% for val in row %}
+                                    <td class="font-mono {% if loop.index0 == outer_idx %}text-emerald fw-bold bg-emerald bg-opacity-10{% else %}text-muted{% endif %}">
+                                        {{ val }}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+</table>
+</div>
+                    {% endif %}
+                </div>
+</div>
+<!-- Per-Class Classification Report -->
+<div class="col-lg-6">
+<div class="p-3 rounded-3 card-glass h-100">
+<h6 class="text-dark fw-bold mb-2 small" data-i18n="gen_per_class_evaluation_c7b3"><i class="bi bi-table text-cyan me-1"></i> Per-Class Evaluation Metrics</h6>
+                    {% if result.classification_report %}
+                    <div class="table-responsive">
+<table class="table-custom" style="font-size:0.8rem;">
+<thead>
+<tr>
+<th data-i18n="dis_class">Disease Class</th>
+<th data-i18n="dis_precision">Precision</th>
+<th data-i18n="dis_recall_hdr">Recall</th>
+<th data-i18n="dis_f1_hdr">F1-Score</th>
+<th data-i18n="dis_support">Support</th>
+</tr>
+</thead>
+<tbody>
+                                {% for cls, cdata in result.classification_report.items() %}
+                                {% if cls in result.confusion_matrix.labels %}
+                                <tr>
+<td class="text-dark fw-medium">{{ cls }}</td>
+<td class="font-mono text-cyan">{{ "%.1f"|format(cdata.precision * 100) }}%</td>
+<td class="font-mono text-warning">{{ "%.1f"|format(cdata.recall * 100) }}%</td>
+<td class="font-mono text-emerald fw-bold">{{ "%.1f"|format(cdata['f1-score'] * 100) }}%</td>
+<td class="font-mono text-secondary">{{ cdata.support }}</td>
+</tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+</table>
+</div>
+                    {% endif %}
+                </div>
+</div>
+</div>
+</div>
+    {% endif %}
+</div>
+{% endblock %}

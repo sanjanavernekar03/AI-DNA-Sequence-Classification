@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health &amp; Wellness Guidance — DNAura{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/health.css') }}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay for Health Guidance -->
+<div id="health-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+    <div class="spinner-border text-emerald" style="width: 3rem; height: 3rem;" role="status"></div>
+    <h4 class="mt-3 brand-font text-dark" data-i18n="health_loading_msg">AI is generating your wellness guidance...</h4>
+    <p class="text-secondary small">This may take 15-30 seconds with local Ollama.</p>
+</div>
+
+<span data-i18n="health_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-4 py-4">
+<!-- Header -->
+<div class="mb-4">
+<h2 class="fw-bold brand-font text-dark mb-1">
+<i class="bi bi-heart-pulse-fill text-emerald me-2"></i><span data-i18n="sidebar_ai_guidance">AI Health &amp; Wellness Guidance</span>
+</h2>
+<p class="text-secondary small mb-0" data-i18n="health_sub">Multilingual wellness suggestions, nutritional advice, lifestyle tips, and exercise recommendations</p>
+</div>
+<div class="row g-4">
+<!-- FORM CARD -->
+<div class="col-lg-5">
+<div class="card guidance-card-light border-0 p-4 h-100">
+<h5 class="fw-bold text-dark mb-3 brand-font"><i class="bi bi-chat-left-heart guidance-heading-cyan me-2"></i><span data-i18n="health_desc_title">Describe Your Health Concern</span></h5>
+<form action="{{ url_for('health_guidance.index') }}" id="health-guidance-form" method="POST">
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="health_lang_label">Select Language</label>
+<select class="form-select form-control-custom global-lang-select" id="health-lang-select" name="language">
+
+  <option value="en" {% if language == 'en' %}selected{% endif %}>English</option>
+  <option value="hi" {% if language == 'hi' %}selected{% endif %}>हिन्दी</option>
+  <option value="kn" {% if language == 'kn' %}selected{% endif %}>ಕನ್ನಡ</option>
+  <option value="ta" {% if language == 'ta' %}selected{% endif %}>தமிழ்</option>
+  <option value="te" {% if language == 'te' %}selected{% endif %}>తెలుగు</option>
+
+</select>
+</div>
+<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-1">
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="health_goal_label">Health Goal or Problem</label>
+<button class="btn btn-sm btn-outline-emerald py-0 px-2 style-btn-voice" id="btn-health-speak" type="button">
+<i class="bi bi-mic-fill me-1"></i> <span data-i18n="health_speak_btn" id="health-mic-text">Speak Problem</span>
+</button>
+</div>
+<textarea class="form-control form-control-custom" data-i18n-placeholder="health_problem_ph" id="health-problem-input" name="health_problem" placeholder="e.g. 'I feel tired frequently', 'I want a diet for better energy', or 'I want to improve my fitness.'" required="" rows="4">{{ problem }}</textarea>
+<small class="text-muted small" id="health-mic-status"></small>
+</div>
+<!-- Quick Sample Prompts -->
+<div class="mb-4">
+<span class="text-secondary small d-block mb-2" data-i18n="health_sample_goals">Try sample goals:</span>
+<div class="d-flex flex-wrap gap-2">
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample1" data-text="I feel tired frequently during the day" type="button">"Feel tired frequently"</button>
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample2" data-text="I want a diet for better energy and focus" type="button">"Diet for better energy"</button>
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample3" data-text="I want to improve my overall fitness and strength" type="button">"Improve fitness"</button>
+</div>
+</div>
+<button class="btn btn-primary-gradient w-100 py-2 fs-6 fw-bold shadow-md" type="submit">
+<i class="bi bi-stars me-1"></i> <span data-i18n="health_gen_btn">Generate Wellness Guidance</span>
+</button>
+</form>
+</div>
+</div>
+<!-- RESULTS DISPLAY CARD -->
+<div class="col-lg-7">
+<div class="card guidance-card-light border-0 p-4 h-100">
+                {% if guidance %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+<h5 class="fw-bold text-dark mb-0 brand-font"><i class="bi bi-lightbulb-fill text-warning me-2"></i>{{ guidance.title }}</h5>
+<button class="btn btn-sm btn-outline-cyan px-3 py-1 fw-semibold" id="btn-health-listen" type="button">
+<i class="bi bi-volume-up-fill me-1"></i> <span data-i18n="chat_listen_btn">Listen to Guidance</span>
+</button>
+</div>
+<!-- Medical Disclaimer Alert Card -->
+<div class="disclaimer-card-light p-3 mb-4 small">
+<i class="bi bi-shield-exclamation me-2 fs-5 align-middle"></i>
+<strong data-i18n="health_disclaimer_label">Medical Disclaimer:</strong> {{ guidance.medical_disclaimer }}
+                </div>
+<!-- Structured Guidance Sections -->
+<div class="guidance-results-body">
+<!-- General Wellness -->
+<div class="guidance-section-light mb-4">
+<h6 class="guidance-heading-emerald fw-bold mb-2"><i class="bi bi-heart-pulse-fill me-2"></i><span data-i18n="health_gen_well">General Wellness Overview</span></h6>
+<p class="text-high-contrast mb-0 fs-6 leading-relaxed">{{ guidance.general_wellness }}</p>
+</div>
+<div class="row g-3 mb-3">
+<!-- Healthy Foods -->
+<div class="col-md-6">
+<div class="guidance-section-light h-100">
+<h6 class="guidance-heading-cyan fw-bold mb-3"><i class="bi bi-basket-fill me-2"></i><span data-i18n="health_foods">Suggested Healthy Foods</span></h6>
+<ul class="guidance-list">
+                                    {% for food in guidance.healthy_foods %}
+                                    <li class="guidance-list-item"><i class="bi bi-check-circle-fill text-cyan guidance-icon"></i><span>{{ food }}</span></li>
+                                    {% endfor %}
+                                </ul>
+</div>
+</div>
+<!-- Diet Considerations -->
+<div class="col-md-6">
+<div class="guidance-section-light h-100">
+<h6 class="guidance-heading-warning fw-bold mb-3"><i class="bi bi-egg-fried me-2"></i><span data-i18n="health_diet">Diet Considerations</span></h6>
+<ul class="guidance-list">
+                                    {% for diet in guidance.diet_considerations %}
+                                    <li class="guidance-list-item"><i class="bi bi-check-circle-fill text-warning guidance-icon"></i><span>{{ diet }}</span></li>
+                                    {% endfor %}
+                                </ul>
+</div>
+</div>
+</div>
+<div class="row g-3">
+<!-- Exercise Suggestions -->
+<div class="col-md-6">
+<div class="guidance-section-light h-100">
+<h6 class="guidance-heading-purple fw-bold mb-3"><i class="bi bi-activity me-2"></i><span data-i18n="health_exercise">Exercise Suggestions</span></h6>
+<ul class="guidance-list">
+                                    {% for ex in guidance.exercise_suggestions %}
+                                    <li class="guidance-list-item"><i class="bi bi-check-circle-fill text-purple guidance-icon"></i><span>{{ ex }}</span></li>
+                                    {% endfor %}
+                                </ul>
+</div>
+</div>
+<!-- Lifestyle Recommendations -->
+<div class="col-md-6">
+<div class="guidance-section-light h-100">
+<h6 class="guidance-heading-emerald fw-bold mb-3"><i class="bi bi-sun-fill me-2"></i><span data-i18n="health_lifestyle">Lifestyle Recommendations</span></h6>
+<ul class="guidance-list">
+                                    {% for ls in guidance.lifestyle_recommendations %}
+                                    <li class="guidance-list-item"><i class="bi bi-check-circle-fill text-emerald guidance-icon"></i><span>{{ ls }}</span></li>
+                                    {% endfor %}
+                                </ul>
+</div>
+</div>
+</div>
+</div>
+
+                {% else %}
+                <div class="text-center py-5 my-auto">
+<i class="bi bi-heart-pulse fs-1 text-secondary opacity-50 mb-3 d-block"></i>
+<h5 class="text-dark" data-i18n="health_engine_ready">AI Health Guidance Engine Ready</h5>
+<p class="text-secondary small" data-i18n="health_engine_desc">Enter your health goal or concern on the left to receive personalized wellness tips in your chosen language.</p>
+</div>
+                {% endif %}
+            </div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const speakBtn = document.getElementById("btn-health-speak");
+    const listenBtn = document.getElementById("btn-health-listen");
+    const problemInput = document.getElementById("health-problem-input");
+    const langSelect = document.getElementById("health-lang-select");
+    const micStatus = document.getElementById("health-mic-status");
+    const micText = document.getElementById("health-mic-text");
+
+    // Auto-resubmit if language is changed and there's already a problem filled out
+    langSelect.addEventListener("change", function() {
+        if (problemInput.value.trim().length > 5) {
+            document.querySelector("form").submit();
+        }
+    });
+
+    // Sample Prompt Buttons
+    document.querySelectorAll(".sample-prompt-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            problemInput.value = this.dataset.text;
+        });
+    });
+
+    // <span data-i18n="bot_voice_btn">Voice Input</span> (Speech to text)
+    if (speakBtn) {
+        speakBtn.addEventListener("click", function() {
+            const lang = langSelect.value;
+            if (window.VoiceAssistant.isListening) {
+                window.VoiceAssistant.stopListening();
+                micText.textContent = "Speak Problem";
+                micStatus.textContent = "";
+                return;
+            }
+
+            micText.textContent = "Listening...";
+            micStatus.textContent = "Speak into your microphone...";
+
+            window.VoiceAssistant.startListening(
+                lang,
+                function(transcript) {
+                    problemInput.value = transcript;
+                    micStatus.textContent = "Captured speech!";
+                    micText.textContent = "Speak Problem";
+                },
+                function(err) {
+                    micStatus.textContent = "Mic error: " + err;
+                    micText.textContent = "Speak Problem";
+                },
+                function() {
+                    micText.textContent = "Speak Problem";
+                }
+            );
+        });
+    }
+
+    // Voice Output (Text to speech)
+    if (listenBtn) {
+        listenBtn.addEventListener("click", function() {
+            const guidance = {{ guidance|tojson|safe if guidance else 'null' }};
+            if (!guidance) return;
+
+            const lang = langSelect.value;
+            const fullText = `${guidance.title}. ${guidance.general_wellness}. Foods: ${guidance.healthy_foods.join(', ')}. Exercises: ${guidance.exercise_suggestions.join(', ')}.`;
+            
+            window.VoiceAssistant.speak(fullText, lang);
+        });
+    }
+
+    // Show loading overlay on form submit
+    const form = document.getElementById("health-guidance-form");
+    if (form) {
+        form.addEventListener("submit", function() {
+            const overlay = document.getElementById("health-loading-overlay");
+            if (overlay) {
+                overlay.style.display = "flex";
+            }
+        });
+    }
+
+});
+</script>
+{% endblock %}

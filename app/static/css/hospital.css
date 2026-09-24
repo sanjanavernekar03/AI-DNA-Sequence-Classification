@@ -1,0 +1,50 @@
+/* HOSPITALS & DOCTOR BOOKING STYLES */
+
+.hospital-map-container {
+    height: 480px;
+    width: 100%;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    z-index: 1;
+}
+
+.hospital-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hospital-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.hospital-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.doctor-card {
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.doctor-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.doctor-avatar {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 2px solid #10B981;
+}
+
+.doctor-details-box {
+    font-size: 0.85rem;
+}

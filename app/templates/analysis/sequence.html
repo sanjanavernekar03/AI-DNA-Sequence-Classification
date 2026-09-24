@@ -1,0 +1,181 @@
+﻿{% extends "base.html" %}
+
+{% block title %}DNA Sequence Processing &amp; Analysis â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="seq_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+<div>
+<div class="d-flex align-items-center gap-2 mb-1">
+<span class="badge badge-a" data-i18n="welcome_mod1_title"><i class="bi bi-file-earmark-code me-1"></i> Sequence Processing</span>
+<h2 class="fw-bold mb-0" data-i18n="welcome_mod1_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Processing &amp; Analysis</h2>
+</div>
+<p class="small mb-0" data-i18n="welcome_mod1_desc" style="color: var(--text-secondary, #475569);">Validates strict A, T, G, C nucleotides, calculates nucleotide frequencies, GC/AT ratios, and physicochemical properties.</p>
+</div>
+<div class="d-flex gap-2">
+            {% if result and result.id %}
+            <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='sequence', analysis_id=result.id) }}">
+<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+</a>
+            {% endif %}
+            <a class="btn btn-outline-custom" href="{{ url_for('sequence.index') }}">
+<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+</a>
+</div>
+</div>
+<!-- SAMPLE LOADER BAR -->
+<div class="card-glass p-3 mb-4">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Quick Load Benchmark Sequences:</span></span>
+<div class="d-flex flex-wrap gap-2">
+                {% for key, s in samples.items() %}
+                <button class="btn btn-sm btn-outline-custom" data-sample-key="{{ key }}" data-seq-name="{{ s.name }}" data-seq-val="{{ s.sequence }}" data-target-input="sequence_input" data-target-name="sequence_name_input" type="button">
+                    {{ s.name[:25] }}...
+                </button>
+                {% endfor %}
+            </div>
+</div>
+</div>
+<div class="row g-4 mb-4">
+<!-- INPUT FORM -->
+<div class="col-lg-5">
+<div class="card-glass p-4 h-100">
+<h5 class="text-dark fw-bold mb-3"><i class="bi bi-input-cursor text-emerald me-2"></i> <span data-i18n="mod_seq_input">Sequence Input</span></h5>
+<form enctype="multipart/form-data" method="POST">
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="mod_seq_id">Sequence Identifier / Name</label>
+<input class="form-control form-control-custom" data-i18n-placeholder="mod_seq_id" id="sequence_name_input" name="sequence_name" placeholder="e.g. Human TP53 Exon 1" type="text" value="{{ sequence_name|default('') }}"/>
+</div>
+<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-1">
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="mod_raw_dna">Raw DNA Sequence (A, T, G, C)</label>
+<span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
+</div>
+<textarea class="form-control form-control-custom" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
+</div>
+<div class="mb-4">
+<label class="form-label text-secondary small fw-medium" data-i18n="gen_fasta_fa_txt_9b41"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span> (.fasta, .fa, .txt)</label>
+<input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
+</div>
+<div class="d-flex gap-2">
+<button class="btn btn-primary-gradient flex-grow-1 py-2" type="submit">
+<i class="bi bi-play-circle-fill"></i> <span data-i18n="mod_run_analysis">Analyze Sequence</span>
+</button>
+<button class="btn btn-outline-custom" onclick="document.getElementById('sequence_input').value='';" type="button">
+<span data-i18n="btn_clear">Clear</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- RESULTS SECTION -->
+<div class="col-lg-7">
+            {% if result %}
+            <div class="card-glass p-4 h-100">
+<div class="d-flex align-items-center justify-content-between mb-3">
+<div>
+<h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="mod_results">Sequence Analysis Results</span></h5>
+<span class="text-secondary small">{{ result.sequence_name }}</span>
+</div>
+                    {% if result.id %}
+                    <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
+                    {% endif %}
+                </div>
+<!-- Primary Metric Chips -->
+<div class="row g-3 mb-4">
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1"><span data-i18n="mod_seq_len">Total Length</span></span>
+<h4 class="text-dark fw-bold mb-0 font-mono">{{ result.length }} <small class="text-muted" data-i18n="gen_bp_5cfd" style="font-size:0.75rem;">bp</small></h4>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1"><span data-i18n="mod_gc_ratio">GC Content</span></span>
+<h4 class="text-cyan fw-bold mb-0 font-mono">{{ result.gc_content }}%</h4>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1"><span data-i18n="mod_at_ratio">AT Content</span></span>
+<h4 class="text-purple fw-bold mb-0 font-mono">{{ result.at_content }}%</h4>
+</div>
+</div>
+<div class="col-sm-6 col-md-3">
+<div class="p-3 rounded-3 card-glass text-center">
+<span class="text-secondary small d-block mb-1"><span data-i18n="mod_mol_wt">Mol. Weight</span></span>
+<h4 class="text-warning fw-bold mb-0 font-mono" style="font-size:1.1rem;">{{ "%.1f"|format(result.molecular_weight) }} <small class="text-muted" data-i18n="gen_g_mol_44e0" style="font-size:0.7rem;">g/mol</small></h4>
+</div>
+</div>
+</div>
+<!-- Nucleotide Breakdown Table -->
+<div class="table-responsive mb-4">
+<table class="table-custom">
+<thead>
+<tr>
+<th data-i18n="seq_base">Base</th>
+<th data-i18n="seq_nuc">Nucleotide</th>
+<th data-i18n="seq_count">Count (bp)</th>
+<th data-i18n="seq_freq">Frequency</th>
+<th data-i18n="seq_pct">Percentage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="badge badge-a px-2 py-1" data-i18n="gen_a_7fc5">A</span></td>
+<td data-i18n="seq_base_adenine">Adenine</td>
+<td class="font-mono text-dark fw-bold">{{ result.a_count }}</td>
+<td class="font-mono text-secondary">{{ "%.4f"|format(result.a_percentage / 100) }}</td>
+<td class="font-mono text-emerald fw-bold">{{ result.a_percentage }}%</td>
+</tr>
+<tr>
+<td><span class="badge badge-t px-2 py-1" data-i18n="gen_t_b9ec">T</span></td>
+<td data-i18n="seq_base_thymine">Thymine</td>
+<td class="font-mono text-dark fw-bold">{{ result.t_count }}</td>
+<td class="font-mono text-secondary">{{ "%.4f"|format(result.t_percentage / 100) }}</td>
+<td class="font-mono text-danger fw-bold">{{ result.t_percentage }}%</td>
+</tr>
+<tr>
+<td><span class="badge badge-g px-2 py-1" data-i18n="gen_g_dfcf">G</span></td>
+<td data-i18n="seq_base_guanine">Guanine</td>
+<td class="font-mono text-dark fw-bold">{{ result.g_count }}</td>
+<td class="font-mono text-secondary">{{ "%.4f"|format(result.g_percentage / 100) }}</td>
+<td class="font-mono text-warning fw-bold">{{ result.g_percentage }}%</td>
+</tr>
+<tr>
+<td><span class="badge badge-c px-2 py-1" data-i18n="gen_c_0d61">C</span></td>
+<td data-i18n="seq_base_cytosine">Cytosine</td>
+<td class="font-mono text-dark fw-bold">{{ result.c_count }}</td>
+<td class="font-mono text-secondary">{{ "%.4f"|format(result.c_percentage / 100) }}</td>
+<td class="font-mono text-cyan fw-bold">{{ result.c_percentage }}%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Cleaned Sequence Card -->
+<div class="p-3 rounded-3 card-glass" style="background: rgba(0,0,0,0.3);">
+<div class="d-flex justify-content-between align-items-center mb-2">
+<span class="text-secondary small fw-medium"><i class="bi bi-code-square me-1"></i> <span data-i18n="seq_cleaned_title">Cleaned DNA Sequence:</span></span>
+<button class="btn btn-sm btn-outline-custom py-0 px-2" data-copy-target="cleaned_seq_block" style="font-size:0.75rem;">
+<i class="bi bi-clipboard"></i> <span data-i18n="btn_copy">Copy</span>
+</button>
+</div>
+<div class="font-mono text-dark small" id="cleaned_seq_block" style="word-break: break-all; max-height: 120px; overflow-y: auto; line-height: 1.5; letter-spacing: 0.05em;">
+                        {{ result.cleaned_sequence or result.sequence }}
+                    </div>
+</div>
+</div>
+            {% else %}
+            <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
+<i class="bi bi-dna text-muted" style="font-size: 3.5rem;"></i>
+<h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="seq_awaiting">Awaiting DNA Sequence Input</h5>
+<p class="text-secondary small mx-auto" data-i18n="seq_awaiting_desc" style="max-width: 420px;">
+                    Enter a sequence manually, load a benchmark sample from above, or upload a FASTA file to compute nucleotide distributions and GC/AT metrics.
+                </p>
+</div>
+            {% endif %}
+        </div>
+</div>
+</div>
+{% endblock %}

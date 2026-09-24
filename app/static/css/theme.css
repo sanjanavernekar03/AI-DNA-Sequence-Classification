@@ -1,0 +1,350 @@
+/* ==========================================================================
+   DNAura — NATURAL, SIMPLE & CREATIVE THEME SYSTEM (LIGHT DEFAULT)
+   Palette: Soft Purple / Violet Primary, Teal / Aqua Accent, 
+            Clean White & Light Slate Surfaces, Dark Charcoal Typography
+   ========================================================================== */
+
+:root,
+[data-theme="light"],
+html.light-theme {
+    /* Primary Accent (Soft Purple / Violet) */
+    --primary: #6D28D9;
+    --primary-hover: #5B21B6;
+    --primary-light: #F5F3FF;
+    --primary-border: #DDD6FE;
+    --primary-text: #5B21B6;
+
+    /* Secondary Accent (Teal / Aqua / Mint) */
+    --secondary: #0D9488;
+    --secondary-hover: #0F766E;
+    --secondary-light: #CCFBF1;
+    --secondary-border: #99F6E4;
+    --secondary-text: #0F766E;
+
+    --accent-aqua: #06B6D4;
+    --accent-blue: #2563EB;
+    --accent-amber: #D97706;
+    --accent-rose: #E11D48;
+
+    /* Backgrounds & Surfaces */
+    --bg-main: #F8FAFC;
+    --bg-body: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-card-solid: #FFFFFF;
+    --bg-card-hover: #F8FAFC;
+    --bg-sidebar: #FFFFFF;
+    --bg-navbar: #FFFFFF;
+    --bg-surface: #FFFFFF;
+    --bg-surface-elevated: #F1F5F9;
+
+    /* Borders & Dividers */
+    --border-color: #E2E8F0;
+    --border-subtle: #F1F5F9;
+    --border-focus: #7C3AED;
+    --border-glow: rgba(109, 40, 217, 0.12);
+
+    /* Typography (High Contrast Charcoal) */
+    --text-main: #0F172A;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+
+    /* Form Controls */
+    --input-bg: #FFFFFF;
+    --input-text: #0F172A;
+    --input-border: #CBD5E1;
+    --input-focus-border: #7C3AED;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+}
+
+
+
+.text-primary { color: var(--primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-light { color: var(--text-light) !important; }
+.text-white-50,
+.text-white-25 { color: rgba(255, 255, 255, 0.85) !important; }
+
+small.text-muted,
+.form-text,
+.form-label,
+.form-check-label,
+.input-group-text,
+.table-custom th,
+.table-custom td,
+.nav-link,
+.sidebar-item,
+.badge,
+.card,
+.btn-link,
+.btn-close {
+    color: inherit;
+}
+
+/* Base Body Styles */
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+}
+
+/* Animations */
+@keyframes floatSoft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseSoft {
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+    animation: floatSoft 4s ease-in-out infinite;
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Feature Chips / Badges */
+.feature-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.feature-chip:hover {
+    border-color: var(--primary-border);
+    color: var(--primary);
+}
+
+.feature-chip i {
+    color: var(--primary);
+}
+
+/* Navbar Theme Styling */
+.navbar-custom {
+    background: var(--bg-navbar);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    padding: 0.65rem 1rem;
+}
+
+.navbar-custom .brand-font {
+    color: var(--text-main) !important;
+}
+
+.nav-link-custom {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s ease;
+}
+
+.nav-link-custom:hover,
+.nav-link-custom.active {
+    color: var(--primary) !important;
+    background: var(--primary-light) !important;
+}
+
+.global-lang-select {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+}
+
+/* Sidebar Theme Styling */
+.app-sidebar {
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+.sidebar-heading {
+    color: var(--text-muted) !important;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+}
+
+.sidebar-item {
+    color: var(--text-secondary) !important;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.sidebar-item:hover {
+    color: var(--primary) !important;
+    background: var(--primary-light) !important;
+}
+
+.sidebar-item.active {
+    background: var(--primary-light) !important;
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+/* Cards & Surface Panels */
+.card-glass,
+.stat-card,
+.panel {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--text-main) !important;
+}
+
+.card-glass:hover,
+.stat-card:hover {
+    border-color: var(--primary-border) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Tables */
+.table-custom th {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--text-secondary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: 600;
+}
+
+.table-custom td {
+    color: var(--text-main) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: transparent !important;
+}
+
+.table-custom tr:hover td {
+    background: var(--bg-surface-elevated) !important;
+}
+
+/* Forms & Inputs */
+.form-control-custom,
+.form-select,
+.form-control {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--input-text) !important;
+    border-radius: var(--radius-sm);
+}
+
+.form-control-custom:focus,
+.form-select:focus,
+.form-control:focus {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 3px var(--border-glow) !important;
+    color: var(--input-text) !important;
+    outline: none;
+}
+
+.form-control-custom::placeholder,
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.8;
+}
+
+.input-group-text {
+    background-color: var(--bg-surface-elevated) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Dropdowns & Modals */
+.dropdown-menu {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-md) !important;
+    color: var(--text-main) !important;
+    border-radius: var(--radius-md);
+}
+
+.dropdown-item {
+    color: var(--text-main) !important;
+    font-size: 0.88rem;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--primary) !important;
+}
+
+.dropdown-divider {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* Chatbot Styles */
+.chatbot-panel {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border-radius: var(--radius-lg);
+}
+
+.chatbot-header {
+    background: var(--primary) !important;
+    color: #FFFFFF !important;
+}
+
+.chatbot-conversation {
+    background: var(--bg-surface-elevated) !important;
+}
+
+.assistant-bubble {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-bubble {
+    background: var(--primary) !important;
+    color: #FFFFFF !important;
+}
+
+.chatbot-footer {
+    background: var(--bg-card) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.chatbot-input {
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--input-text) !important;
+}

@@ -1,0 +1,29 @@
+{% extends "admin/base.html" %}
+{% block title %}DNA ANALYSIS AI — Admin Dashboard{% endblock %}
+{% block page_title %}<span id="dynamic-greeting">Welcome</span> Admin{% endblock %}
+{% block content %}
+<div class="hero-strip">
+<div><span class="hero-kicker" data-i18n="gen_system_operations_4312">SYSTEM OPERATIONS</span><h2 data-i18n="gen_ai_system_command_ov_b6ed">AI System Command Overview</h2><p data-i18n="gen_monitor_platform_usa_0814">Monitor platform usage, DNA processing, predictions and risk signals from one secure workspace.</p></div>
+<div class="hero-dna"><div class="mini-helix">༺DNA༻</div></div>
+</div>
+<div class="stats-grid">
+{% for key,label,icon in [('users','Total Users','people-fill'),('analyses','Total DNA Analyses','cpu-fill'),('predictions','Total Predictions','stars'),('mutation_analyses','Total Mutation Analyses','activity'),('reports','Total Reports','file-earmark-medical-fill'),('chatbot_conversations','Chatbot Conversations','chat-dots-fill')] %}
+<div class="stat-card"><div class="stat-icon"><i class="bi bi-{{ icon }}"></i></div><div><div class="stat-label">{{ label }}</div><div class="stat-value">{{ stats[key] }}</div></div></div>
+{% endfor %}
+</div>
+<div class="row g-4 mt-1">
+<div class="col-xl-7"><div class="panel"><div class="panel-head"><div><span class="eyebrow" data-i18n="gen_risk_intelligence_61bd">RISK INTELLIGENCE</span><h3 data-i18n="gen_disease_risk_distrib_e2f4">Disease Risk Distribution</h3></div><i class="bi bi-radar text-cyan"></i></div><div class="chart-wrap"><canvas id="riskChart"></canvas></div></div></div>
+<div class="col-xl-5"><div class="panel h-100"><div class="panel-head"><div><span class="eyebrow" data-i18n="gen_security_feed_fd16">SECURITY FEED</span><h3 data-i18n="gen_recent_admin_activit_2e5c">Recent Admin Activity</h3></div></div>
+<div class="activity-list">{% for a in recent_activity %}<div class="activity-row"><div class="activity-dot"></div><div><strong>{{ a.action }}</strong><small>{{ a.details or 'System action' }} · {{ a.created_at|format_datetime('%b %d, %H:%M') }}</small></div></div>{% else %}<div class="empty" data-i18n="auto_775e7e">No administrator activity yet.</div>{% endfor %}</div></div></div>
+</div>
+<div class="panel mt-4"><div class="panel-head"><div><span class="eyebrow" data-i18n="gen_user_monitor_5e6f">USER MONITOR</span><h3 data-i18n="gen_recently_registered__c255">Recently Registered Users</h3></div><a class="small-link" data-i18n="gen_view_all_users_3a64" href="{{ url_for('admin.users') }}">View all users â†’</a></div>
+<div class="table-responsive"><table class="admin-table"><thead><tr><th data-i18n="gen_user_8f9b">User</th><th data-i18n="reg_label_username">Username</th><th data-i18n="gen_role_bbba">Role</th><th data-i18n="appt_status">Status</th><th data-i18n="gen_registered_6205">Registered</th><th data-i18n="gen_last_login_a235">Last login</th><th></th></tr></thead><tbody>
+{% for u in recent_users %}<tr><td><strong>{{ u.full_name }}</strong><small>{{ u.email }}</small></td><td>@{{ u.username }}</td><td><span class="tag">{{ u.role }}</span></td><td><span class="status {{ 'ok' if u.is_active else 'off' }}">{{ 'Active' if u.is_active else 'Disabled' }}</span></td><td>{{ u.created_at|format_datetime('%b %d, %Y') }}</td><td>{{ u.last_login_at|format_datetime('%b %d, %H:%M') if u.last_login_at else 'Never' }}</td><td><a class="table-action" data-i18n="gen_inspect_35a9" href="{{ url_for('admin.user_detail',user_id=u.id) }}">Inspect</a></td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}
+{% block scripts %}<script>
+const risk={{ risk|tojson }};
+new Chart(document.getElementById('riskChart'),{type:'doughnut',data:{labels:risk.map(x=>x.risk_category),datasets:[{data:risk.map(x=>x.total),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aab8ca',padding:18}}}}});
+const hr = new Date().getHours();
+document.getElementById('dynamic-greeting').innerText = hr < 12 ? 'Good Morning' : (hr < 18 ? 'Good Afternoon' : 'Good Evening');
+</script>{% endblock %}

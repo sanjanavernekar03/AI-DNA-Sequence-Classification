@@ -1,0 +1,19 @@
+﻿{% extends "base.html" %}
+
+{% block title %}404 â€” Page Not Found â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="dash_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container py-5 text-center">
+<div class="card-glass p-5 mx-auto" style="max-width: 580px;">
+<h1 class="display-1 fw-bold mb-2" style="color: var(--primary, #6D28D9);">404</h1>
+<h3 class="fw-bold mb-3" data-i18n="err_404_locus" style="color: var(--text-main, #0F172A);">DNA Record Not Found</h3>
+<p class="small mb-4" data-i18n="gen_the_analysis_record__d401" style="color: var(--text-secondary, #475569);">
+            The analysis record, report, or page you are attempting to access does not exist or has been moved.
+        </p>
+<a class="btn btn-primary-gradient" data-i18n="gen_return_to_dashboard_e76b" href="{{ url_for('dashboard.index') }}">
+<i class="bi bi-speedometer2"></i> Return to Dashboard
+        </a>
+</div>
+</div>
+{% endblock %}

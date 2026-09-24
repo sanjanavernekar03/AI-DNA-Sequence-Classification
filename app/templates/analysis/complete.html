@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Complete DNA Analysis â€” DNAura{% endblock %}
+
+{% block content %}
+<span data-i18n="comp_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="container-fluid px-0">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+<div>
+<div class="d-flex align-items-center gap-2 mb-1">
+<span class="badge" data-i18n="comp_badge" style="background: var(--primary-light, #F5F3FF); color: var(--primary, #6D28D9); border: 1px solid var(--primary-border, #DDD6FE);">UNIFIED PIPELINE</span>
+<h2 class="fw-bold mb-0" data-i18n="comp_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">Complete DNA Analysis</h2>
+</div>
+<p class="small mb-0" data-i18n="comp_desc" style="color: var(--text-secondary, #475569);">Executes all sequence tools simultaneously: Sequence Processing, Similarity Alignment, Mutation Detection, Classification, Disease Prediction, and Visualization.</p>
+</div>
+<a class="btn btn-outline-custom" href="{{ url_for('dashboard.index') }}">
+<i class="bi bi-arrow-left"></i> <span data-i18n="nav_dashboard">Dashboard</span>
+</a>
+</div>
+<!-- SAMPLE LOADER BAR -->
+<div class="card-glass p-3 mb-4">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Quick Load Benchmark Sequences for Complete Analysis:</span></span>
+<div class="d-flex flex-wrap gap-2">
+<button class="btn btn-sm btn-outline-custom" onclick="
+                            document.getElementById('sequence_name_input').value='Human TP53 Tumor Suppressor';
+                            document.getElementById('sequence_input').value='{{ samples.human_tp53.sequence }}';
+                            document.getElementById('reference_name_input').value='Wildtype Reference';
+                            document.getElementById('reference_sequence_input').value='{{ samples.human_tp53.sequence }}';
+                            showToast('Benchmark Loaded', 'Loaded TP53 Benchmark for complete analysis.', 'info');
+                        " type="button">
+<span data-i18n="sim_bench_tp53">Human TP53 Suppressor</span>
+</button>
+<button class="btn btn-sm btn-outline-custom" onclick="
+                            document.getElementById('sequence_name_input').value='BRCA1 Exon 11 Variant';
+                            let bSeq = '{{ samples.brca1_exon11.sequence }}';
+                            document.getElementById('sequence_input').value= bSeq.substring(0,35) + 'A' + bSeq.substring(36,80) + 'T' + bSeq.substring(81);
+                            document.getElementById('reference_name_input').value='BRCA1 Wildtype Reference';
+                            document.getElementById('reference_sequence_input').value='{{ samples.brca1_exon11.sequence }}';
+                            showToast('Benchmark Loaded', 'Loaded BRCA1 Exon 11 Variant for complete analysis.', 'info');
+                        " type="button">
+<span data-i18n="sim_bench_brca1">BRCA1 Exon 11 Variant</span>
+</button>
+<button class="btn btn-sm btn-outline-custom" onclick="
+                            document.getElementById('sequence_name_input').value='Beta-Globin (HBB) Codon 6 Variant';
+                            let hbb = '{{ samples.hbb_sickle_cell.sequence }}';
+                            document.getElementById('sequence_input').value= hbb.substring(0,19) + 'T' + hbb.substring(20);
+                            document.getElementById('reference_name_input').value='HBB Normal Reference';
+                            document.getElementById('reference_sequence_input').value='{{ samples.hbb_sickle_cell.sequence }}';
+                            showToast('Benchmark Loaded', 'Loaded HBB Beta-Globin for complete analysis.', 'info');
+                        " type="button">
+<span data-i18n="mut_hbb_bench">HBB Sickle Cell Variant</span>
+</button>
+</div>
+</div>
+</div>
+<!-- MAIN LAUNCHER CARD -->
+<div class="row justify-content-center">
+<div class="col-lg-10">
+<div class="card-glass p-4 p-md-5">
+<form enctype="multipart/form-data" id="complete-analysis-form" method="POST">
+<div class="row g-4">
+<!-- TARGET SEQUENCE -->
+<div class="col-md-6">
+<h5 class="text-dark fw-bold mb-3"><i class="bi bi-bullseye text-emerald me-2"></i> <span data-i18n="comp_target_title">1. Target Sample Sequence</span></h5>
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="comp_sample_id">Sample Identifier</label>
+<input class="form-control form-control-custom" data-i18n-placeholder="comp_sample_id" id="sequence_name_input" name="sequence_name" placeholder="e.g. Clinical Patient Specimen #108" type="text" value="{{ target_name|default('') }}"/>
+</div>
+<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-1">
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="comp_seq_input">Target DNA Sequence (A, T, G, C)</label>
+<span class="small text-emerald" data-i18n="seq_len_gc" id="target_seq_counter">Length: 0 bp</span>
+</div>
+<textarea class="form-control form-control-custom" data-counter-id="target_seq_counter" id="sequence_input" name="sequence" placeholder="ATGCGTACGTAG..." required="" rows="8">{{ target_seq|default('') }}</textarea>
+</div>
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
+<input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
+</div>
+</div>
+<!-- REFERENCE SEQUENCE -->
+<div class="col-md-6">
+<h5 class="text-dark fw-bold mb-3"><i class="bi bi-shield-check text-cyan me-2"></i> <span data-i18n="comp_ref_title">2. Wildtype Reference (Optional)</span></h5>
+<div class="mb-3">
+<label class="form-label text-secondary small fw-medium" data-i18n="comp_ref_id">Reference Identifier</label>
+<input class="form-control form-control-custom" data-i18n-placeholder="comp_ref_id" id="reference_name_input" name="reference_name" placeholder="e.g. Reference Sequence" type="text" value="{{ ref_name|default('') }}"/>
+</div>
+<div class="mb-3">
+<div class="d-flex justify-content-between align-items-center mb-1">
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="comp_ref_input">Reference DNA Sequence (A, T, G, C)</label>
+<span class="small text-cyan" data-i18n="comp_default_bench" id="ref_seq_counter">Default: Benchmark</span>
+</div>
+<textarea class="form-control form-control-custom" data-counter-id="ref_seq_counter" data-i18n-placeholder="ph_blank_benchmark" id="reference_sequence_input" name="reference_sequence" placeholder="Leave blank to use standard benchmark reference sequence..." rows="8">{{ ref_seq|default('') }}</textarea>
+</div>
+<div class="form-text text-muted small" data-i18n="auto_df23e5">
+                                If left blank, the system automatically benchmarks against the standard human homologous reference sequence.
+                            </div>
+</div>
+</div>
+<!-- CTA BUTTON -->
+<div class="mt-4 pt-4 border-top border-secondary border-opacity-25 text-center">
+<button class="btn btn-primary-gradient btn-lg px-5 py-3 fs-5 fw-bold shadow-lg" id="btn-run-complete-analysis" type="submit">
+<i class="bi bi-stars"></i> <span data-i18n="comp_btn_run">Run Complete DNA Analysis</span>
+</button>
+<p class="text-secondary small mt-2 mb-0" data-i18n="comp_pipeline_desc">
+                            Executes all 6 bioinformatics and machine learning pipelines in a single unified workflow.
+                        </p>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<!-- STEP-BY-STEP PROGRESS MODAL -->
+<div aria-hidden="true" class="modal fade" id="completeAnalysisProgressModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content card-glass border-0 shadow-lg" style="background: var(--bg-card); border: 1px solid var(--border-color) !important;">
+<div class="modal-body p-4 p-md-5 text-center">
+<div class="spinner-grow text-emerald mb-3" role="status" style="width: 3rem; height: 3rem; color: #10B981;"></div>
+<h4 class="fw-bold brand-font mb-1" data-i18n="comp_modal_title" style="color: var(--text-main);">Running Complete DNA Analysis</h4>
+<p class="text-secondary small mb-4" data-i18n="comp_modal_desc">Orchestrating six bioinformatics and machine learning modules...</p>
+<!-- Steps List -->
+<div class="text-start d-flex flex-column gap-2">
+<div class="progress-step-item" id="step-seq">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="text-dark small fw-medium" data-i18n="comp_step1">1. Sequence Processing &amp; Physicochemical Analytics</span>
+</div>
+<div class="progress-step-item" id="step-sim">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="text-dark small fw-medium" data-i18n="comp_step2">2. Pairwise Needleman-Wunsch Global Alignment</span>
+</div>
+<div class="progress-step-item" id="step-mut">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="text-dark small fw-medium" data-i18n="comp_step3">3. Mutation Calling &amp; SNV / Indel Mapping</span>
+</div>
+<div class="progress-step-item" id="step-clf">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="text-dark small fw-medium" data-i18n="comp_step4">4. AI-Based DNA Functional Classification</span>
+</div>
+<div class="progress-step-item" id="step-dis">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="small fw-medium" data-i18n="comp_step5" style="color: var(--text-main, #0F172A);">5. Disease Risk Prediction</span>
+</div>
+<div class="progress-step-item" id="step-vis">
+<span class="step-icon"><i class="bi bi-circle text-muted"></i></span>
+<span class="text-dark small fw-medium" data-i18n="comp_step6">6. Interactive Visual Analytics</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/complete_analysis.js') }}"></script>
+{% endblock %}

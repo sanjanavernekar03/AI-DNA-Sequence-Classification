@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — DNAura{% endblock %}
+
+{% block extra_css %}
+<style>
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+.step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--text-secondary, #536174);
+    background: var(--bg-surface-elevated);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+.step-dot.active {
+    background: var(--primary, #6B46C1);
+    color: #FFFFFF;
+    border-color: var(--primary, #6B46C1);
+}
+.step-line {
+    width: 50px;
+    height: 2px;
+    background: var(--border-color);
+}
+.step-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary, #536174);
+}
+.step-text.active {
+    color: var(--primary, #6B46C1);
+}
+.form-step {
+    display: none;
+    animation: fadeIn 0.4s;
+}
+.form-step.active {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<span data-i18n="reg_page_title" id="page-i18n-title" style="display:none;"></span>
+<div class="auth-viewport d-flex align-items-center justify-content-center py-5" style="min-height: calc(100vh - 75px); background-color: var(--bg-main);">
+<div class="container" style="max-width: 650px;">
+<div class="card border-0 shadow-sm p-4 p-md-5 position-relative" style="background-color: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;">
+<div class="text-center mb-4">
+<div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 60px; height: 60px; background: var(--primary, #6B46C1); color: #FFFFFF; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(107, 70, 193, 0.2);">
+<i class="bi bi-person-plus"></i>
+</div>
+<h3 class="fw-bold mb-1" data-i18n="gen_create_your_DNAura_82d5" style="color: var(--text-main);">Create your DNAura account</h3>
+<p class="small mb-0" data-i18n="gen_join_us_to_unlock_pe_c8b8" style="color: var(--text-secondary);">Join us to unlock personalized health insights.</p>
+</div>
+<!-- Progress Indicator -->
+<div class="step-indicator">
+<div class="d-flex flex-column align-items-center gap-1">
+<div class="step-dot active" id="dot-step1">1</div>
+<span class="step-text active" data-i18n="reg_step_1" id="text-step1">Personal Details</span>
+</div>
+<div class="step-line"></div>
+<div class="d-flex flex-column align-items-center gap-1">
+<div class="step-dot" id="dot-step2">2</div>
+<span class="step-text" data-i18n="gen_health_information_dad9" id="text-step2">Health Information</span>
+</div>
+</div>
+<form action="{{ url_for('auth.register') }}" id="registration-form" method="POST">
+<!-- STEP 1: PERSONAL DETAILS -->
+<div class="form-step active" id="step1">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="prof_fullname" style="color: var(--text-secondary, #536174);">Full Name <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_full_name" id="full_name" name="full_name" placeholder="Enter full name" required="" style="border-color: var(--border-color, #D9E1EA);" type="text" value="{{ form_data.get('full_name', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_username" style="color: var(--text-secondary, #536174);">Username <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_username" id="username" minlength="3" name="username" placeholder="Enter username" required="" style="border-color: var(--border-color, #D9E1EA);" type="text" value="{{ form_data.get('username', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="gen_email_ce8a" style="color: var(--text-secondary, #536174);">Email <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_email" id="email" name="email" placeholder="Enter email" required="" style="border-color: var(--border-color, #D9E1EA);" type="email" value="{{ form_data.get('email', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_phone" style="color: var(--text-secondary, #536174);">Phone Number <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_phone" id="phone" name="phone" placeholder="Enter phone number" required="" style="border-color: var(--border-color, #D9E1EA);" type="tel" value="{{ form_data.get('phone', '') }}"/>
+</div>
+<div class="col-12">
+<label class="form-label small fw-medium" data-i18n="gen_address_dd7b" style="color: var(--text-secondary, #536174);">Address <span class="text-danger">*</span></label>
+<textarea class="form-control" data-i18n-placeholder="reg_ph_address" id="address" name="address" placeholder="Enter complete address" required="" rows="2" style="border-color: var(--border-color, #D9E1EA);">{{ form_data.get('address', '') }}</textarea>
+</div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium" data-i18n="reg_label_city" style="color: var(--text-secondary, #536174);">City</label>
+                                    <input class="form-control" data-i18n-placeholder="reg_ph_city" id="city" name="city" placeholder="e.g., Bangalore" value="{{ form_data.get('city', '') }}" style="border-color: var(--border-color, #D9E1EA);" type="text"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium" data-i18n="reg_label_state" style="color: var(--text-secondary, #536174);">State</label>
+                                    <input class="form-control" data-i18n-placeholder="reg_ph_state" id="state" name="state" placeholder="e.g., Karnataka" value="{{ form_data.get('state', '') }}" style="border-color: var(--border-color, #D9E1EA);" type="text"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium" data-i18n="reg_label_country" style="color: var(--text-secondary, #536174);">Country</label>
+                                    <input class="form-control" data-i18n-placeholder="reg_ph_country" id="country" name="country" placeholder="e.g., India" value="{{ form_data.get('country', '') }}" style="border-color: var(--border-color, #D9E1EA);" type="text"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium" data-i18n="reg_label_postal_code" style="color: var(--text-secondary, #536174);">Postal Code</label>
+                                    <input class="form-control" data-i18n-placeholder="reg_ph_postal" id="postal_code" name="postal_code" placeholder="e.g., 560001" value="{{ form_data.get('postal_code', '') }}" style="border-color: var(--border-color, #D9E1EA);" type="text"/>
+                                </div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_password" style="color: var(--text-secondary, #536174);">Password <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_ph_create_pass" id="password" minlength="8" name="password" placeholder="Create password" required="" style="border-color: var(--border-color, #D9E1EA);" type="password"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_confirm_password" style="color: var(--text-secondary, #536174);">Confirm Password <span class="text-danger">*</span></label>
+<input class="form-control" data-i18n-placeholder="reg_label_confirm_password" id="confirm_password" minlength="8" name="confirm_password" placeholder="Confirm password" required="" style="border-color: var(--border-color, #D9E1EA);" type="password"/>
+</div>
+</div>
+<button class="btn w-100 py-3 fw-bold text-white mt-4 shadow-sm" data-i18n="reg_btn_next" id="btn-next" onmouseout="this.style.transform='translateY(0)';" onmouseover="this.style.transform='translateY(-2px)';" style="background-color: var(--primary, #6B46C1); border-radius: 10px; transition: transform 0.2s ease;" type="button">
+                        Next Step <i class="bi bi-arrow-right ms-1"></i>
+</button>
+</div>
+<!-- STEP 2: HEALTH INFORMATION -->
+<div class="form-step" id="step2">
+<div class="alert alert-info border-0 mb-4 d-flex align-items-center" data-i18n="auto_62e53e" style="background-color: rgba(13, 148, 136, 0.1); color: var(--secondary, #0D9488); font-size: 0.9rem; border-radius: 8px;">
+<i class="bi bi-info-circle-fill me-2 fs-5"></i> This basic information helps DNAura personalize your health recommendations and DNA analyses.
+                    </div>
+<div class="row g-3">
+<div class="col-md-12">
+<label class="form-label small fw-medium" data-i18n="gen_blood_group_0bf1" style="color: var(--text-secondary, #536174);">Blood Group</label>
+<select class="form-select" name="blood_group" style="border-color: var(--border-color, #D9E1EA);">
+<option data-i18n="gen_select_blood_group_o_dbec" value="">Select Blood Group (Optional)</option>
+<option value="A+" {% if form_data.get('blood_group') == 'A+' %}selected{% endif %} data-i18n="gen_a_13fe">A+</option>
+<option value="A-" {% if form_data.get('blood_group') == 'A-' %}selected{% endif %} data-i18n="gen_a_f041">A-</option>
+<option value="B+" {% if form_data.get('blood_group') == 'B+' %}selected{% endif %} data-i18n="gen_b_f6fe">B+</option>
+<option value="B-" {% if form_data.get('blood_group') == 'B-' %}selected{% endif %} data-i18n="gen_b_308b">B-</option>
+<option value="AB+" {% if form_data.get('blood_group') == 'AB+' %}selected{% endif %} data-i18n="gen_ab_5653">AB+</option>
+<option value="AB-" {% if form_data.get('blood_group') == 'AB-' %}selected{% endif %} data-i18n="gen_ab_9d30">AB-</option>
+<option value="O+" {% if form_data.get('blood_group') == 'O+' %}selected{% endif %} data-i18n="gen_o_5861">O+</option>
+<option value="O-" {% if form_data.get('blood_group') == 'O-' %}selected{% endif %} data-i18n="gen_o_79e8">O-</option>
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="gen_height_cm_20fb" style="color: var(--text-secondary, #536174);">Height (cm)</label>
+<input class="form-control" data-i18n-placeholder="reg_ph_height" max="300" min="30" name="height" placeholder="e.g. 175" step="0.1" style="border-color: var(--border-color, #D9E1EA);" type="number" value="{{ form_data.get('height', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="gen_weight_kg_9172" style="color: var(--text-secondary, #536174);">Weight (kg)</label>
+<input class="form-control" data-i18n-placeholder="reg_ph_weight" max="500" min="2" name="weight" placeholder="e.g. 70.5" step="0.1" style="border-color: var(--border-color, #D9E1EA);" type="number" value="{{ form_data.get('weight', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_dob" style="color: var(--text-secondary, #536174);">Date of Birth</label>
+<input class="form-control" name="date_of_birth" style="border-color: var(--border-color, #D9E1EA);" type="date" value="{{ form_data.get('date_of_birth', '') }}"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-medium" data-i18n="reg_label_gender" style="color: var(--text-secondary, #536174);">Gender</label>
+<select class="form-select" name="gender" style="border-color: var(--border-color, #D9E1EA);">
+<option data-i18n="gen_select_optional_51a6" value="">Select (Optional)</option>
+<option value="Male" {% if form_data.get('gender') == 'Male' %}selected{% endif %} data-i18n="reg_gender_male">Male</option>
+<option value="Female" {% if form_data.get('gender') == 'Female' %}selected{% endif %} data-i18n="reg_gender_female">Female</option>
+<option value="Other" {% if form_data.get('gender') == 'Other' %}selected{% endif %} data-i18n="reg_gender_other">Other</option>
+</select>
+</div>
+</div>
+<div class="d-flex gap-2 mt-4">
+<button class="btn btn-outline-secondary py-3 fw-bold px-4" data-i18n="reg_btn_back" id="btn-back" style="border-radius: 10px; border-color: var(--border-color, #E2E8F0);" type="button">
+                            Back
+                        </button>
+<button class="btn text-white py-3 fw-bold flex-grow-1 shadow-sm" data-i18n="gen_complete_registratio_e3e3" onmouseout="this.style.transform='translateY(0)';" onmouseover="this.style.transform='translateY(-2px)';" style="background-color: var(--secondary, #0D9488); border-radius: 10px; transition: transform 0.2s ease;" type="submit">
+                            Complete Registration <i class="bi bi-check2-circle ms-1"></i>
+</button>
+</div>
+</div>
+</form>
+<div class="text-center mt-5 pt-3 border-top small" style="border-color: var(--border-color, #E2E8F0) !important; color: var(--text-secondary, #64748B);">
+<span data-i18n="reg_have_account">Already have an account?</span>
+<a class="fw-bold ms-1 text-decoration-none" data-i18n="welcome_sign_in" href="{{ url_for('auth.login') }}" style="color: var(--secondary, #0D9488);">Login</a>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const btnNext = document.getElementById('btn-next');
+    const btnBack = document.getElementById('btn-back');
+    const dot1 = document.getElementById('dot-step1');
+    const dot2 = document.getElementById('dot-step2');
+    const text1 = document.getElementById('text-step1');
+    const text2 = document.getElementById('text-step2');
+
+    btnNext.addEventListener('click', function() {
+        // Simple HTML5 Validation for Step 1
+        const inputs = step1.querySelectorAll('input[required], textarea[required]');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                input.reportValidity();
+                isValid = false;
+            }
+        });
+
+        // Custom password check
+        const pwd = document.getElementById('password');
+        const cpwd = document.getElementById('confirm_password');
+        if (pwd.value && cpwd.value && pwd.value !== cpwd.value) {
+            cpwd.setCustomValidity("Passwords do not match");
+            cpwd.reportValidity();
+            isValid = false;
+        } else {
+            cpwd.setCustomValidity("");
+        }
+
+        if (isValid) {
+            step1.classList.remove('active');
+            step2.classList.add('active');
+            dot1.classList.remove('active');
+            dot2.classList.add('active');
+            text1.classList.remove('active');
+            text2.classList.add('active');
+        }
+    });
+
+    btnBack.addEventListener('click', function() {
+        step2.classList.remove('active');
+        step1.classList.add('active');
+        dot2.classList.remove('active');
+        dot1.classList.add('active');
+        text2.classList.remove('active');
+        text1.classList.add('active');
+    });
+});
+</script>
+{% endblock %}
