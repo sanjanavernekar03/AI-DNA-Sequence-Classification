@@ -71,11 +71,15 @@ def login():
 def logout():
     admin_id = session.get("admin_id")
     if admin_id:
-        _log("Admin logout", "admin", admin_id, "Administrator signed out")
-    session.pop("admin_id", None)
-    session.pop("admin_username", None)
-    session.pop("admin_name", None)
-    return redirect(url_for("admin.login"))
+        try:
+            _log("Admin logout", "admin", admin_id, "Administrator signed out")
+        except Exception:
+            pass
+    for key in ["admin_id", "admin_username", "admin_name", "role", "user_id", "username", "full_name", "email"]:
+        session.pop(key, None)
+    session.clear()
+    flash("Administrator signed out successfully.", "info")
+    return redirect(url_for("auth.login"))
 
 
 @admin_bp.route("/dashboard")

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}DNA ANALYSIS AI — Admin Control Center{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <!-- Chart.js 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <!-- Custom Theme & Admin CSS -->
+    <link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet"/>
+    <!-- Multilingual & Theme Engine -->
+    <script src="{{ url_for('static', filename='js/translations.js') }}?v=8"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/language.js') }}?v=8"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-shell">
+    <div class="dna-bg">
+        <svg viewBox="0 0 100 800" preserveAspectRatio="none">
+            <path d="M10,0 Q90,200 10,400 T10,800"></path>
+            <path d="M90,0 Q10,200 90,400 T90,800"></path>
+        </svg>
+    </div>
+
+    <!-- ADMIN SIDEBAR -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="bi bi-dna"></i></div>
+            <div>
+                <div class="brand-name">DNA ANALYSIS <span>AI</span></div>
+                <small data-i18n="gen_admin_control_center_ff7e">ADMIN CONTROL CENTER</small>
+            </div>
+        </div>
+        <div class="admin-status">
+            <span></span><strong data-i18n="admin_sys_active">SYSTEM ACTIVE</strong>
+        </div>
+        <nav>
+            <div class="nav-label" data-i18n="admin_nav_core">CORE OPS</div>
+            <a class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                <i class="bi bi-grid-1x2-fill"></i> <span data-i18n="gen_dashboard_23b3">Dashboard</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.users' or request.endpoint == 'admin.user_detail' %}active{% endif %}" href="{{ url_for('admin.users') }}">
+                <i class="bi bi-people-fill"></i> <span data-i18n="gen_user_management_7c99">User Management</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.dna_uploads' %}active{% endif %}" href="{{ url_for('admin.dna_uploads') }}">
+                <i class="bi bi-folder-fill"></i> <span data-i18n="admin_nav_dna">DNA Uploads</span>
+            </a>
+
+            <div class="nav-label" data-i18n="admin_nav_ai">AI INTELLIGENCE</div>
+            <a class="{% if request.endpoint == 'admin.predictions' %}active{% endif %}" href="{{ url_for('admin.predictions') }}">
+                <i class="bi bi-cpu-fill"></i> <span data-i18n="gen_ai_predictions_414d">AI Predictions</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.high_risk' %}active{% endif %}" href="{{ url_for('admin.high_risk') }}">
+                <i class="bi bi-exclamation-triangle-fill"></i> <span data-i18n="gen_high_risk_cases_9b2e">High-Risk Cases</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.reports' %}active{% endif %}" href="{{ url_for('admin.reports') }}">
+                <i class="bi bi-file-earmark-medical-fill"></i> <span data-i18n="sidebar_gen_reports">Report Center</span>
+            </a>
+
+            <div class="nav-label" data-i18n="admin_nav_system">SYSTEM</div>
+            <a class="{% if request.endpoint == 'admin.activity_logs' %}active{% endif %}" href="{{ url_for('admin.activity_logs') }}">
+                <i class="bi bi-journal-text"></i> <span data-i18n="gen_activity_logs_0036">Activity Logs</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.analytics' %}active{% endif %}" href="{{ url_for('admin.analytics') }}">
+                <i class="bi bi-graph-up-arrow"></i> <span data-i18n="gen_analytics_4413">Analytics</span>
+            </a>
+            <a class="{% if request.endpoint == 'admin.settings' %}active{% endif %}" href="{{ url_for('admin.settings') }}">
+                <i class="bi bi-gear-fill"></i> <span data-i18n="nav_settings">Settings</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="admin-profile">
+                <div class="avatar">A</div>
+                <div>
+                    <strong>{{ session.get('admin_name', session.get('admin_username', 'System Admin')) }}</strong>
+                    <small data-i18n="gen_administrator_7b7b">Administrator</small>
+                </div>
+            </div>
+            <a class="logout-link" href="{{ url_for('admin.logout') }}"><i class="bi bi-box-arrow-right"></i> <span data-i18n="nav_logout">Logout</span></a>
+        </div>
+    </aside>
+
+    <!-- MAIN ADMIN AREA -->
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="icon-btn" id="sidebarToggle" type="button" title="Toggle Sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div>
+                    <div class="eyebrow" data-i18n="gen_admin_control_center_ff7e">ADMIN CONTROL CENTER</div>
+                    <h1>{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                </div>
+            </div>
+            <div class="top-actions">
+                <span class="live-pill"><i class="bi bi-circle-fill text-success"></i> <span data-i18n="admin_live_feed">LIVE AGENT FEED</span></span>
+                <button class="icon-btn theme-toggle-btn" type="button" title="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill theme-icon-dark" style="display: none;"></i>
+                    <i class="bi bi-sun-fill theme-icon-light"></i>
+                </button>
+                <select class="form-select form-select-sm global-lang-select" style="width: auto; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="kn">ಕನ್ನಡ</option>
+                    <option value="ta">தமிழ்</option>
+                    <option value="te">తెలుగు</option>
+                </select>
+                <a class="profile-chip" href="{{ url_for('admin.settings') }}">
+                    <div class="avatar sm">A</div>
+                    <span>{{ session.get('admin_username', 'Admin') }}</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- FLASH MESSAGES -->
+        <div class="px-4 pt-3" style="position: relative; z-index: 100;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border shadow-sm" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i> <span data-i18n-flash="{{ message }}">{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- PAGE CONTENT -->
+        <div class="admin-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Admin JS -->
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block scripts %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

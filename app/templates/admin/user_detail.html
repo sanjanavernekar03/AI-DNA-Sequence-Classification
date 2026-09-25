@@ -1,0 +1,92 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin — User Detail{% endblock %}
+{% block page_title %}User Profile & Management{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div>
+    <span class="eyebrow" data-i18n="gen_user_profile_001">USER MANAGEMENT</span>
+    <h2>{{ user.full_name }} (@{{ user.username }})</h2>
+    <p>View detailed user metrics, adjust account role, or remove account.</p>
+  </div>
+  <a class="primary-btn" href="{{ url_for('admin.users') }}"><i class="bi bi-arrow-left"></i> Back to Users</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="panel text-center p-4">
+      <div class="avatar lg mx-auto mb-3">{{ user.full_name[0] | upper if user.full_name else 'U' }}</div>
+      <h4>{{ user.full_name }}</h4>
+      <p class="text-muted small">@{{ user.username }} · {{ user.email }}</p>
+      <span class="tag mb-3">{{ user.role }}</span>
+      <hr>
+      <div class="text-start small">
+        <p class="mb-2"><strong>Phone:</strong> {{ user.phone or 'Not provided' }}</p>
+        <p class="mb-2"><strong>Gender:</strong> {{ user.gender or 'Not provided' }}</p>
+        <p class="mb-2"><strong>Location:</strong> {{ user.city or '' }}{% if user.state %}, {{ user.state }}{% endif %}{% if user.country %}, {{ user.country }}{% endif %}</p>
+        <p class="mb-2"><strong>Registered:</strong> {{ user.created_at|format_datetime('%d %b %Y, %H:%M') }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-dna"></i></div>
+          <div>
+            <div class="stat-label">DNA Uploads</div>
+            <div class="stat-value">{{ counts.sequences }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-cpu-fill"></i></div>
+          <div>
+            <div class="stat-label">Analyses</div>
+            <div class="stat-value">{{ counts.analyses }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-file-earmark-medical-fill"></i></div>
+          <div>
+            <div class="stat-label">Reports</div>
+            <div class="stat-value">{{ counts.reports }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mb-4">
+      <div class="panel-head">
+        <h3>Update Account Role</h3>
+        <i class="bi bi-shield-person"></i>
+      </div>
+      <form method="post">
+        <input type="hidden" name="action" value="save"/>
+        <label>Account Role</label>
+        <select class="admin-input mb-3" name="role">
+          <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+          <option value="researcher" {% if user.role == 'researcher' %}selected{% endif %}>Analyst / Researcher</option>
+          <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrator</option>
+        </select>
+        <button type="submit" class="primary-btn"><i class="bi bi-check-lg"></i> Save Changes</button>
+      </form>
+    </div>
+
+    <div class="panel border-danger">
+      <div class="panel-head">
+        <h3 class="text-danger">Danger Zone</h3>
+        <i class="bi bi-exclamation-octagon text-danger"></i>
+      </div>
+      <p class="text-muted small">Deleting this user account will permanently remove all associated DNA sequences, analysis results, and generated reports.</p>
+      <form method="post" onsubmit="return confirm('Are you sure you want to delete this user and all linked records?');">
+        <input type="hidden" name="action" value="delete"/>
+        <button type="submit" class="danger-btn"><i class="bi bi-trash"></i> Delete User Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
