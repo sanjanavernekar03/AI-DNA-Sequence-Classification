@@ -11,7 +11,7 @@
 <div id="health-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
     <div class="spinner-border text-emerald" style="width: 3rem; height: 3rem;" role="status"></div>
     <h4 class="mt-3 brand-font text-dark" data-i18n="health_loading_msg">AI is generating your wellness guidance...</h4>
-    <p class="text-secondary small">This may take 15-30 seconds with local Ollama.</p>
+    <p class="text-secondary small" data-i18n="health_loading_sub">This may take 15-30 seconds with local Ollama.</p>
 </div>
 
 <span data-i18n="health_page_title" id="page-i18n-title" style="display:none;"></span>
@@ -55,9 +55,9 @@
 <div class="mb-4">
 <span class="text-secondary small d-block mb-2" data-i18n="health_sample_goals">Try sample goals:</span>
 <div class="d-flex flex-wrap gap-2">
-<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample1" data-text="I feel tired frequently during the day" type="button">"Feel tired frequently"</button>
-<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample2" data-text="I want a diet for better energy and focus" type="button">"Diet for better energy"</button>
-<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample3" data-text="I want to improve my overall fitness and strength" type="button">"Improve fitness"</button>
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample1" data-sample-key="health_sample1_text" data-text="I feel tired frequently during the day" type="button">"Feel tired frequently"</button>
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample2" data-sample-key="health_sample2_text" data-text="I want a diet for better energy and focus" type="button">"Diet for better energy"</button>
+<button class="btn btn-sm sample-prompt-btn" data-i18n="health_sample3" data-sample-key="health_sample3_text" data-text="I want to improve my overall fitness and strength" type="button">"Improve fitness"</button>
 </div>
 </div>
 <button class="btn btn-primary-gradient w-100 py-2 fs-6 fw-bold shadow-md" type="submit">
@@ -162,47 +162,78 @@ document.addEventListener("DOMContentLoaded", function() {
     const micStatus = document.getElementById("health-mic-status");
     const micText = document.getElementById("health-mic-text");
 
-    // Auto-resubmit if language is changed and there's already a problem filled out
-    langSelect.addEventListener("change", function() {
-        if (problemInput.value.trim().length > 5) {
-            document.querySelector("form").submit();
+    function getText(key, fallback) {
+        if (window.LanguageManager && typeof window.LanguageManager.getText === 'function') {
+            return window.LanguageManager.getText(key, fallback);
+        }
+        return fallback;
+    }
+
+    let isSubmitting = false;
+    function handleLangChange(newLang) {
+        if (langSelect && newLang && langSelect.value !== newLang) {
+            langSelect.value = newLang;
+        }
+        if (!isSubmitting && problemInput && problemInput.value.trim().length > 3) {
+            isSubmitting = true;
+            const form = document.getElementById("health-guidance-form");
+            if (form) form.submit();
+        }
+    }
+
+    if (langSelect) {
+        langSelect.addEventListener("change", function() {
+            if (window.LanguageManager && window.LanguageManager.setLanguage) {
+                window.LanguageManager.setLanguage(this.value);
+            }
+            handleLangChange(this.value);
+        });
+    }
+
+    window.addEventListener("languageChanged", function(e) {
+        const newLang = e.detail && e.detail.language;
+        if (newLang) {
+            handleLangChange(newLang);
         }
     });
 
     // Sample Prompt Buttons
     document.querySelectorAll(".sample-prompt-btn").forEach(btn => {
         btn.addEventListener("click", function() {
-            problemInput.value = this.dataset.text;
+            const sampleKey = this.dataset.sampleKey;
+            const fallbackText = this.dataset.text;
+            problemInput.value = getText(sampleKey, fallbackText);
         });
     });
 
-    // <span data-i18n="bot_voice_btn">Voice Input</span> (Speech to text)
+    // Voice Input (Speech to text)
     if (speakBtn) {
         speakBtn.addEventListener("click", function() {
-            const lang = langSelect.value;
+            const lang = langSelect ? langSelect.value : (window.LanguageManager ? window.LanguageManager.getLanguage() : 'en');
+            const defaultSpeakText = getText("health_speak_btn", "Speak Problem");
             if (window.VoiceAssistant.isListening) {
                 window.VoiceAssistant.stopListening();
-                micText.textContent = "Speak Problem";
+                micText.textContent = defaultSpeakText;
                 micStatus.textContent = "";
                 return;
             }
 
-            micText.textContent = "Listening...";
-            micStatus.textContent = "Speak into your microphone...";
+            micText.textContent = getText("health_listening", "Listening...");
+            micStatus.textContent = getText("health_speak_mic", "Speak into your microphone...");
 
             window.VoiceAssistant.startListening(
                 lang,
                 function(transcript) {
                     problemInput.value = transcript;
-                    micStatus.textContent = "Captured speech!";
-                    micText.textContent = "Speak Problem";
+                    micStatus.textContent = getText("health_captured_speech", "Captured speech!");
+                    micText.textContent = defaultSpeakText;
                 },
                 function(err) {
-                    micStatus.textContent = "Mic error: " + err;
-                    micText.textContent = "Speak Problem";
+                    micStatus.textContent = getText("health_mic_error", "Mic error: ") + err;
+                    micText.textContent = defaultSpeakText;
                 },
                 function() {
-                    micText.textContent = "Speak Problem";
+                    micText.textContent = defaultSpeakText;
                 }
             );
         });
@@ -214,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const guidance = {{ guidance|tojson|safe if guidance else 'null' }};
             if (!guidance) return;
 
-            const lang = langSelect.value;
+            const lang = langSelect ? langSelect.value : 'en';
             const fullText = `${guidance.title}. ${guidance.general_wellness}. Foods: ${guidance.healthy_foods.join(', ')}. Exercises: ${guidance.exercise_suggestions.join(', ')}.`;
             
             window.VoiceAssistant.speak(fullText, lang);
@@ -235,3 +266,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
+

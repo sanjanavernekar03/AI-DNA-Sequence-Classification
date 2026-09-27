@@ -11,12 +11,12 @@ health_bp = Blueprint('health_guidance', __name__, url_prefix='/health-guidance'
 def index():
     guidance_result = None
     problem_input = ""
-    language = "en"
+    language = (request.args.get('language') or request.form.get('language') or 'en').strip()
     user_id = session['user_id']
 
     if request.method == 'POST':
         problem_input = request.form.get('health_problem', '').strip()
-        language = request.form.get('language', 'en').strip()
+        language = (request.form.get('language') or request.args.get('language') or 'en').strip()
 
         if problem_input:
             guidance_result = generate_health_guidance(problem_input, language=language)

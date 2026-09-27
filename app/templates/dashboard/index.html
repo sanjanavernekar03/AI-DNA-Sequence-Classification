@@ -157,7 +157,7 @@
 <!-- TOP SECTION -->
 <div class="dashboard-header">
 <h2 class="greeting-title">
-<span data-i18n="gen_greeting_{{ greeting_time|lower }}">Good {{ greeting_time }},</span> {{ current_user.full_name }} 👋
+<span data-i18n="gen_greeting_{{ greeting_time|lower }}">Good {{ greeting_time }},</span> <span data-user-name="{{ current_user.full_name or current_user.username }}">{{ current_user.full_name or current_user.username }}</span> 👋
         </h2>
 <p class="greeting-subtitle" data-i18n="gen_explore_your_dna_analys">Explore your DNA analysis tools and health services.</p>
 <!-- DNA FACT -->
@@ -253,31 +253,37 @@ document.addEventListener("DOMContentLoaded", function() {
     const factText = document.getElementById('dna-fact-text');
     if (!factText) return;
     
-    // Attempt to fetch the DNA fact from the Ollama backend
-    const lang = (window.LanguageManager && window.LanguageManager.getLanguage) ? window.LanguageManager.getLanguage() : 'en';
-    fetch('/dashboard/api/dna-fact?lang=' + lang)
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            if (data.fact) {
-                // Fade out transition
-                factText.style.opacity = '0';
-                setTimeout(() => {
-                    factText.innerHTML = data.fact;
-                    factText.style.transition = 'opacity 0.5s ease-in';
-                    factText.style.opacity = '1';
-                }, 300);
-            } else {
-                throw new Error('Fact empty');
-            }
-        })
-        .catch(error => {
-            console.error('Failed to fetch Ollama DNA fact:', error);
-            // Revert to the fallback template fact gracefully without alarming the user
-            factText.innerHTML = {{ dna_fact|tojson }};
-        });
+    function updateDnaFact(lang) {
+        const targetLang = lang || ((window.LanguageManager && window.LanguageManager.getLanguage) ? window.LanguageManager.getLanguage() : 'en');
+        fetch('/dashboard/api/dna-fact?lang=' + encodeURIComponent(targetLang))
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.fact) {
+                    factText.style.opacity = '0';
+                    setTimeout(() => {
+                        factText.innerHTML = data.fact;
+                        factText.style.transition = 'opacity 0.5s ease-in';
+                        factText.style.opacity = '1';
+                    }, 300);
+                }
+            })
+            .catch(error => {
+                console.error('Failed to fetch DNA fact:', error);
+            });
+    }
+
+    // Initial fetch for current language
+    const currentLang = (window.LanguageManager && window.LanguageManager.getLanguage) ? window.LanguageManager.getLanguage() : 'en';
+    updateDnaFact(currentLang);
+
+    // Listen for global language switch events
+    window.addEventListener('languageChanged', function(e) {
+        const newLang = (e && e.detail && e.detail.language) ? e.detail.language : 'en';
+        updateDnaFact(newLang);
+    });
 });
 </script>
 {% endblock %}

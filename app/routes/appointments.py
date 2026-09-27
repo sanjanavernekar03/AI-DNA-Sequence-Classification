@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from app.routes.auth import login_required
 from app.services.hospital_service import get_hospital_by_id, get_doctors_by_hospital_id
 from app.services.booking_service import create_appointment, get_user_appointments, cancel_user_appointment
-from app.database.connection import get_db
 
 appointments_bp = Blueprint('appointments', __name__, url_prefix='/appointments')
 
@@ -17,6 +16,7 @@ def book():
 
     hospital = get_hospital_by_id(hospital_id) if hospital_id else None
     doctor = None
+    docs = []
 
     if hospital_id:
         docs = get_doctors_by_hospital_id(hospital_id)
@@ -80,3 +80,4 @@ def cancel(appointment_id: int):
     else:
         flash("Unable to cancel appointment.", "danger")
     return redirect(url_for('appointments.my_appointments'))
+

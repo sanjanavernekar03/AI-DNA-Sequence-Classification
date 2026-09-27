@@ -1,133 +1,136 @@
 {% extends "base.html" %}
 
-{% block title %}DNA Sequence Visualization â€” DNAura{% endblock %}
+{% block title %}DNA Sequence Visualization — DNAura{% endblock %}
 
 {% block content %}
 <span data-i18n="viz_page_title" id="page-i18n-title" style="display:none;"></span>
 <div class="container-fluid px-0">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-<div>
-<div class="d-flex align-items-center gap-2 mb-1">
-<span class="badge badge-g" data-i18n="welcome_mod6_badge"><i class="bi bi-bar-chart me-1"></i> Visualization</span>
-<h2 class="fw-bold mb-0" data-i18n="viz_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Visualization &amp; Analytics</h2>
-</div>
-<p class="small mb-0" data-i18n="viz_desc" style="color: var(--text-secondary, #475569);">Transforms raw sequence data into interactive charts for composition, GC/AT ratios, frequencies, and mutation density.</p>
-</div>
-<div class="d-flex gap-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-g" data-i18n="welcome_mod6_badge"><i class="bi bi-bar-chart me-1"></i> Visualization</span>
+                <h2 class="fw-bold mb-0" data-i18n="viz_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Visualization &amp; Analytics</h2>
+            </div>
+            <p class="small mb-0" data-i18n="viz_desc" style="color: var(--text-secondary, #475569);">Transforms raw sequence data into interactive charts for composition, GC/AT ratios, frequencies, and mutation density.</p>
+        </div>
+        <div class="d-flex gap-2">
             {% if result and result.id %}
             <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='visualization', analysis_id=result.id) }}">
-<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
-</a>
+                <i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+            </a>
             {% endif %}
             <a class="btn btn-outline-custom" href="{{ url_for('visualization.index') }}">
-<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
-</a>
-</div>
-</div>
-<!-- SAMPLE LOADER BAR -->
-<div class="card-glass p-3 mb-4">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Quick Load Benchmark Sequences:</span></span>
-<div class="d-flex flex-wrap gap-2">
+                <i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+            </a>
+        </div>
+    </div>
+    <!-- SAMPLE LOADER BAR -->
+    <div class="card-glass p-3 mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Quick Load Benchmark Sequences:</span></span>
+            <div class="d-flex flex-wrap gap-2">
                 {% for key, s in samples.items() %}
-                <button class="btn btn-sm btn-outline-custom" data-sample-key="{{ key }}" data-seq-name="{{ s.name }}" data-seq-val="{{ s.sequence }}" data-target-input="sequence_input" data-target-name="sequence_name_input" type="button">
+                <button class="btn btn-sm btn-outline-custom" data-i18n="clf_sample_{{ key }}" data-sample-key="{{ key }}" data-seq-name="{{ s.name }}" data-seq-val="{{ s.sequence }}" data-target-input="sequence_input" data-target-name="sequence_name_input" type="button">
                     {{ s.name[:25] }}...
                 </button>
                 {% endfor %}
             </div>
-</div>
-</div>
-<div class="row g-4 mb-4">
-<!-- INPUT FORM -->
-<div class="col-lg-4">
-<div class="card-glass p-4 h-100">
-<h5 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart-fill text-purple me-2"></i> <span data-i18n="vis_input_title">Sequence Visualizer Input</span></h5>
-<form enctype="multipart/form-data" method="POST">
-<div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="hist_seq_name">Sequence Name</label>
-<input class="form-control form-control-custom" data-i18n-placeholder="hist_seq_name" id="sequence_name_input" name="sequence_name" placeholder="e.g. Target Exon" type="text" value="{{ sequence_name|default('') }}"/>
-</div>
-<div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="viz_target_seq">Target DNA Sequence (A, T, G, C)</label>
-<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="sequence_input" name="sequence" placeholder="ATGC..." required="" rows="6">{{ input_sequence|default('') }}</textarea>
-</div>
-<div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="viz_opt_ref">Optional Reference (for Mutation Map)</label>
-<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_opt_ref" name="ref_sequence" placeholder="Optional reference sequence..." rows="3">{{ ref_sequence|default('') }}</textarea>
-</div>
-<div class="mb-4">
-<label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
-<input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
-</div>
-<button class="btn btn-primary-gradient w-100 py-2" style="background: linear-gradient(135deg, #8B5CF6, #6366F1);" type="submit">
-<i class="bi bi-graph-up"></i> <span data-i18n="vis_run_btn">Generate Visualizations</span>
-</button>
-</form>
-</div>
-</div>
-<!-- CHARTS SECTION -->
-<div class="col-lg-8">
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <!-- INPUT FORM -->
+        <div class="col-lg-4">
+            <div class="card-glass p-4 h-100">
+                <h5 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart-fill text-purple me-2"></i> <span data-i18n="vis_input_title">Sequence Visualizer Input</span></h5>
+                <form enctype="multipart/form-data" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-i18n="hist_seq_name">Sequence Name</label>
+                        <input class="form-control form-control-custom" data-i18n-placeholder="ph_seq_name_eg" id="sequence_name_input" name="sequence_name" placeholder="e.g. Target Exon" type="text" value="{{ sequence_name|default('') }}"/>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label text-secondary small fw-medium mb-0" data-i18n="viz_target_seq">Target DNA Sequence (A, T, G, C)</label>
+                            <span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
+                        </div>
+                        <textarea class="form-control form-control-custom" data-counter-id="seq_counter" data-i18n-placeholder="ph_dna_seq" id="sequence_input" name="sequence" placeholder="ATGC..." required="" rows="6">{{ input_sequence|default('') }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-i18n="viz_opt_ref">Optional Reference (for Mutation Map)</label>
+                        <textarea class="form-control form-control-custom" data-i18n-placeholder="ph_opt_ref" name="ref_sequence" placeholder="Optional reference sequence..." rows="3">{{ ref_sequence|default('') }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
+                        <input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
+                    </div>
+                    <button class="btn btn-primary-gradient w-100 py-2" style="background: linear-gradient(135deg, #8B5CF6, #6366F1);" type="submit">
+                        <i class="bi bi-graph-up"></i> <span data-i18n="vis_run_btn">Generate Visualizations</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- CHARTS SECTION -->
+        <div class="col-lg-8">
             {% if result %}
             <div class="d-flex flex-column gap-4">
-<!-- ROW 1: Nucleotide Bar + Donut -->
-<div class="row g-3">
-<div class="col-md-7">
-<div class="card-glass p-3 h-100">
-<h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-bar-chart-fill text-emerald me-1"></i> <span data-i18n="viz_nuc_dist font-mono">Nucleotide Distribution (Counts)</span></h6>
-<div style="height: 220px; position: relative;">
-<canvas id="chartNucleotideBar"></canvas>
-</div>
-</div>
-</div>
-<div class="col-md-5">
-<div class="card-glass p-3 h-100">
-<h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart-fill text-cyan me-1"></i> <span data-i18n="viz_nuc_comp">Nucleotide Composition (%)</span></h6>
-<div style="height: 220px; position: relative;">
-<canvas id="chartNucleotideDonut"></canvas>
-</div>
-</div>
-</div>
-</div>
-<!-- ROW 2: GC vs AT + k-mers -->
-<div class="row g-3">
-<div class="col-md-5">
-<div class="card-glass p-3 h-100">
-<h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart text-warning me-1"></i> <span data-i18n="viz_gc_vs_at">GC vs AT Content</span></h6>
-<div style="height: 220px; position: relative;">
-<canvas id="chartGCvsAT"></canvas>
-</div>
-</div>
-</div>
-<div class="col-md-7">
-<div class="card-glass p-3 h-100">
-<h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-bar-chart-steps text-purple me-1"></i> <span data-i18n="viz_kmer_freq font-mono">Top 10 Trinucleotide (3-mer) Frequencies</span></h6>
-<div style="height: 220px; position: relative;">
-<canvas id="chartKmers"></canvas>
-</div>
-</div>
-</div>
-</div>
-<!-- ROW 3: Mutation Map if present -->
+                <!-- ROW 1: Nucleotide Bar + Donut -->
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <div class="card-glass p-3 h-100">
+                            <h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-bar-chart-fill text-emerald me-1"></i> <span data-i18n="viz_nuc_dist">Nucleotide Distribution (Counts)</span></h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="chartNucleotideBar"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="card-glass p-3 h-100">
+                            <h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart-fill text-cyan me-1"></i> <span data-i18n="viz_nuc_comp">Nucleotide Composition (%)</span></h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="chartNucleotideDonut"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ROW 2: GC vs AT + k-mers -->
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="card-glass p-3 h-100">
+                            <h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-pie-chart text-warning me-1"></i> <span data-i18n="viz_gc_vs_at">GC vs AT Content</span></h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="chartGCvsAT"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-glass p-3 h-100">
+                            <h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-bar-chart-steps text-purple me-1"></i> <span data-i18n="viz_kmer_freq">Top 10 Trinucleotide (3-mer) Frequencies</span></h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="chartKmers"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ROW 3: Mutation Map if present -->
                 {% if result.mutation_chart %}
                 <div class="card-glass p-3">
-<h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span data-i18n="viz_mut_map">Mutation Coordinate Map Along Sequence</span></h6>
-<div style="height: 180px; position: relative;">
-<canvas id="chartMutationMap"></canvas>
-</div>
-</div>
+                    <h6 class="fw-bold mb-3" style="color: var(--text-main);"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span data-i18n="viz_mut_map">Mutation Coordinate Map Along Sequence</span></h6>
+                    <div style="height: 180px; position: relative;">
+                        <canvas id="chartMutationMap"></canvas>
+                    </div>
+                </div>
                 {% endif %}
             </div>
             {% else %}
             <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
-<i class="bi bi-graph-up-arrow text-muted" style="font-size: 3.5rem;"></i>
-<h5 class="fw-bold mt-3 mb-2" data-i18n="viz_awaiting_title" style="color: var(--text-main);">Awaiting Visualization Sequence</h5>
-<p class="text-secondary small mx-auto" data-i18n="vis_awaiting_desc" style="max-width: 420px;">
+                <i class="bi bi-graph-up-arrow text-muted" style="font-size: 3.5rem;"></i>
+                <h5 class="fw-bold mt-3 mb-2" data-i18n="viz_awaiting_title" style="color: var(--text-main);">Awaiting Visualization Sequence</h5>
+                <p class="text-secondary small mx-auto" data-i18n="vis_awaiting_desc" style="max-width: 420px;">
                     Provide a DNA sequence to render interactive nucleotide bar charts, composition donuts, GC vs AT comparisons, and trinucleotide distribution graphs.
                 </p>
-</div>
+            </div>
             {% endif %}
         </div>
-</div>
+    </div>
 </div>
 {% endblock %}
 

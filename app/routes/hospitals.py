@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, g, jsonify
 from app.routes.auth import login_required
-from app.services.maps_service import geocode_address, search_nearby_hospitals
-from app.services.hospital_service import save_or_get_hospital, get_hospital_by_id, get_doctors_by_hospital_id
+from app.services.maps_service import geocode_address, reverse_geocode, search_nearby_hospitals
+from app.services.hospital_service import save_or_get_hospitals_batch, save_or_get_hospital, get_hospital_by_id, get_doctors_by_hospital_id
 
 hospitals_bp = Blueprint('hospitals', __name__, url_prefix='/hospitals')
 
@@ -13,8 +13,9 @@ def index():
     query_lat = request.args.get('lat') or request.form.get('lat')
     query_lng = request.args.get('lng') or request.form.get('lng')
     manual_location = (request.args.get('location') or request.form.get('location') or '').strip()
+    mode_param = (request.args.get('mode') or request.form.get('mode') or '').strip()
 
-    # Registered user address fallback
+    # Registered user address
     user_address_parts = [
         user.get('address'),
         user.get('city'),
@@ -30,26 +31,32 @@ def index():
     search_location = ""
     location_mode = "registered"
 
-    # Case 1: Device Geolocation (Current Location)
-    if query_lat and query_lng:
-        try:
-            coords = {'lat': float(query_lat), 'lng': float(query_lng)}
-            location_mode = "current"
-            search_location = "Current Device Location"
-        except (ValueError, TypeError):
-            coords = None
+    # MODE 1: Explicit GPS Current Location (via lat & lng query params or mode=current)
+    if (query_lat and query_lng and mode_param != "registered" and not manual_location) or mode_param == "current":
+        if query_lat and query_lng:
+            try:
+                coords = {'lat': float(query_lat), 'lng': float(query_lng)}
+                location_mode = "current"
+                # Reverse geocode exact GPS coordinates to obtain actual location name/address
+                geo_name = reverse_geocode(coords['lat'], coords['lng'])
+                if geo_name:
+                    search_location = geo_name
+                else:
+                    search_location = f"Current Location ({coords['lat']:.4f}, {coords['lng']:.4f})"
+            except (ValueError, TypeError):
+                coords = None
 
-    # Case 2: Manual Location Search
-    if not coords and manual_location and manual_location.lower() != registered_address.lower():
+    # MODE 3: Manual Address Search
+    if not coords and manual_location:
         coords = geocode_address(manual_location)
         if coords:
             location_mode = "manual"
             search_location = manual_location
         else:
-            flash(f"Unable to find location for '{manual_location}'. Please try another location.", "warning")
+            flash(f"Unable to find location for '{manual_location}'. Please check the address.", "warning")
 
-    # Case 3: Registered Address (Default Fallback)
-    if not coords:
+    # MODE 2: Registered Address Search (Used if mode=registered OR default if no current coords or manual location)
+    if not coords and (mode_param == "registered" or not manual_location):
         location_mode = "registered"
         if user_lat and user_lng:
             try:
@@ -68,6 +75,9 @@ def index():
             if coords:
                 search_location = user.get('city')
 
+        if not coords:
+            search_location = registered_address or user.get('city') or ""
+
     nearby_hospitals_data = []
     if coords:
         try:
@@ -76,20 +86,14 @@ def index():
             nearby_hospitals_data = []
             flash("Hospital lookup service is currently busy. Please try again or search a nearby city.", "info")
 
-    hospitals_list = []
     for h_data in nearby_hospitals_data:
         h_data['city'] = user.get('city', '')
         h_data['state'] = user.get('state', '')
         h_data['country'] = user.get('country', '')
         h_data['postal_code'] = user.get('postal_code', '')
-        try:
-            db_id = save_or_get_hospital(h_data)
-            h_data['db_id'] = db_id
-        except Exception:
-            h_data['db_id'] = 1
-        hospitals_list.append(h_data)
 
-    display_search_location = search_location or registered_address or "Registered Location"
+    hospitals_list = save_or_get_hospitals_batch(nearby_hospitals_data)
+    display_search_location = search_location or registered_address or ""
 
     return render_template(
         'hospitals/hospitals.html',
@@ -108,21 +112,43 @@ def search_api():
     lat = payload.get('lat')
     lng = payload.get('lng')
     location = (payload.get('location') or '').strip()
+    mode_param = (payload.get('mode') or '').strip()
 
-    if lat is None or lng is None:
-        coords = geocode_address(location)
-    else:
+    coords = None
+    location_mode = mode_param or "manual"
+    user = g.user or {}
+
+    if lat is not None and lng is not None:
         try:
             coords = {'lat': float(lat), 'lng': float(lng)}
+            if not mode_param:
+                location_mode = "current"
         except (TypeError, ValueError):
             coords = None
+
+    if not coords and location:
+        coords = geocode_address(location)
+        location_mode = "manual"
+
+    if not coords and mode_param == "registered":
+        user_lat = user.get('latitude')
+        user_lng = user.get('longitude')
+        if user_lat and user_lng:
+            try:
+                coords = {'lat': float(user_lat), 'lng': float(user_lng)}
+            except (TypeError, ValueError):
+                coords = None
 
     if not coords:
         return jsonify({'error': 'Enable location access or add a valid address to find nearby hospitals.'}), 400
 
+    display_name = ""
+    if lat is not None and lng is not None:
+        display_name = reverse_geocode(coords['lat'], coords['lng']) or f"Current Location ({coords['lat']:.4f}, {coords['lng']:.4f})"
+    else:
+        display_name = location or "Registered Location"
+
     hospitals_data = search_nearby_hospitals(coords['lat'], coords['lng'])
-    hospitals_list = []
-    user = g.user or {}
     for hospital_data in hospitals_data:
         hospital_data.update({
             'city': user.get('city', ''),
@@ -130,10 +156,15 @@ def search_api():
             'country': user.get('country', ''),
             'postal_code': user.get('postal_code', ''),
         })
-        hospital_data['db_id'] = save_or_get_hospital(hospital_data)
-        hospitals_list.append(hospital_data)
 
-    return jsonify({'user_coords': coords, 'hospitals': hospitals_list})
+    hospitals_list = save_or_get_hospitals_batch(hospitals_data)
+
+    return jsonify({
+        'user_coords': coords,
+        'search_location': display_name,
+        'hospitals': hospitals_list,
+        'location_mode': location_mode
+    })
 
 
 @hospitals_bp.route('/<int:hospital_id>/doctors')
@@ -150,3 +181,4 @@ def doctors(hospital_id: int):
         hospital=hospital,
         doctors=doctors_list
     )
+

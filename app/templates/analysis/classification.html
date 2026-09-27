@@ -1,136 +1,136 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}DNA Classification â€” DNAura{% endblock %}
+{% block title %}DNA Classification — DNAura{% endblock %}
 
 {% block content %}
 <span data-i18n="class_page_title" id="page-i18n-title" style="display:none;"></span>
 <div class="container-fluid px-0">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-<div>
-<div class="d-flex align-items-center gap-2 mb-1">
-<span class="badge badge-c" data-i18n="welcome_mod4_title"><i class="bi bi-tags me-1"></i> DNA Classification</span>
-<h2 class="fw-bold mb-0" data-i18n="clf_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Classification</h2>
-</div>
-<p class="small mb-0" data-i18n="clf_desc" style="color: var(--text-secondary, #475569);">Classifies DNA sequences into functional categories (Promoter, CDS, Intron, Terminator, ncRNA).</p>
-</div>
-<div class="d-flex gap-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-c" data-i18n="welcome_mod4_title"><i class="bi bi-tags me-1"></i> DNA Classification</span>
+                <h2 class="fw-bold mb-0" data-i18n="clf_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Classification</h2>
+            </div>
+            <p class="small mb-0" data-i18n="clf_desc" style="color: var(--text-secondary, #475569);">Classifies DNA sequences into functional categories (Promoter, CDS, Intron, Terminator, ncRNA).</p>
+        </div>
+        <div class="d-flex gap-2">
             {% if result and result.id %}
             <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='classification', analysis_id=result.id) }}">
-<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
-</a>
+                <i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+            </a>
             {% endif %}
             <a class="btn btn-outline-custom" href="{{ url_for('classification.index') }}">
-<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
-</a>
-</div>
-</div>
-<!-- SAMPLE LOADER BAR -->
-<div class="card-glass p-3 mb-4">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Pre-populate Functional Benchmarks:</span></span>
-<div class="d-flex flex-wrap gap-2">
+                <i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+            </a>
+        </div>
+    </div>
+    <!-- SAMPLE LOADER BAR -->
+    <div class="card-glass p-3 mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mod_quick_samples">Pre-populate Functional Benchmarks:</span></span>
+            <div class="d-flex flex-wrap gap-2">
                 {% for key, s in samples.items() %}
                 <button class="btn btn-sm btn-outline-custom" data-i18n="clf_sample_{{ key }}" data-sample-key="{{ key }}" data-seq-name="{{ s.name }}" data-seq-val="{{ s.sequence }}" data-target-input="sequence_input" data-target-name="sequence_name_input" type="button">
                     {{ s.name[:25] }}...
                 </button>
                 {% endfor %}
             </div>
-</div>
-</div>
-<div class="row g-4 mb-4">
-<!-- INPUT FORM -->
-<div class="col-lg-5">
-<div class="card-glass p-4 h-100">
-<h5 class="text-dark fw-bold mb-3"><i class="bi bi-cpu text-primary me-2"></i> <span data-i18n="clf_input_title">Sequence Classifier Input</span></h5>
-<form enctype="multipart/form-data" method="POST">
-<div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="clf_seq_id">Sequence Identifier</label>
-<input class="form-control form-control-custom" data-i18n-placeholder="clf_seq_id" data-i18n-value="sim_ref_default" id="sequence_name_input" name="sequence_name" placeholder="e.g. Uncharacterized Promoter Fragment" type="text" value="{{ sequence_name|default('DNA Sequence') }}"/>
-</div>
-<div class="mb-3">
-<div class="d-flex justify-content-between align-items-center mb-1">
-<label class="form-label text-secondary small fw-medium mb-0" data-i18n="mod_raw_dna">Raw DNA Sequence (A, T, G, C)</label>
-<span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
-</div>
-<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
-</div>
-<div class="mb-4">
-<label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
-<input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
-</div>
-<button class="btn btn-primary-gradient w-100 py-2" type="submit">
-<i class="bi bi-robot"></i> <span data-i18n="clf_run_btn">Classify with AI Model</span>
-</button>
-</form>
-</div>
-</div>
-<!-- RESULTS SECTION -->
-<div class="col-lg-7">
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <!-- INPUT FORM -->
+        <div class="col-lg-5">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-dark fw-bold mb-3"><i class="bi bi-cpu text-primary me-2"></i> <span data-i18n="clf_input_title">Sequence Classifier Input</span></h5>
+                <form enctype="multipart/form-data" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-i18n="clf_seq_id">Sequence Identifier</label>
+                        <input class="form-control form-control-custom" data-i18n-placeholder="ph_seq_id_eg" id="sequence_name_input" name="sequence_name" placeholder="e.g. Uncharacterized Promoter Fragment" type="text" value="{{ sequence_name|default('DNA Sequence') }}"/>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label text-secondary small fw-medium mb-0" data-i18n="mod_raw_dna">Raw DNA Sequence (A, T, G, C)</label>
+                            <span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
+                        </div>
+                        <textarea class="form-control form-control-custom" data-counter-id="seq_counter" data-i18n-placeholder="ph_dna_seq" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span></label>
+                        <input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
+                    </div>
+                    <button class="btn btn-primary-gradient w-100 py-2" type="submit">
+                        <i class="bi bi-robot"></i> <span data-i18n="clf_run_btn">Classify with AI Model</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- RESULTS SECTION -->
+        <div class="col-lg-7">
             {% if result %}
             <div class="card-glass p-4 h-100">
-<div class="d-flex align-items-center justify-content-between mb-3">
-<div>
-<h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="clf_result_title">AI Classification Result</span></h5>
-<span class="text-secondary small">{{ result.sequence_name }}</span>
-</div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="clf_result_title">AI Classification Result</span></h5>
+                        <span class="text-secondary small">{{ result.sequence_name }}</span>
+                    </div>
                     {% if result.id %}
                     <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
                     {% endif %}
                 </div>
-<!-- Primary Classification Outcome Card -->
-<div class="p-4 rounded-3 card-glass mb-4 text-center" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border-color: rgba(59, 130, 246, 0.4);">
-<span class="text-secondary small text-uppercase letter-spacing-1 fw-bold d-block mb-1" data-i18n="clf_pred_class">Predicted Functional Class</span>
-<h2 class="text-dark fw-bold brand-font mb-2">{{ result.predicted_class }}</h2>
-<div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill card-glass">
-<i class="bi bi-patch-check-fill text-emerald"></i>
-<span class="text-dark fw-semibold"><span data-i18n="clf_conf">Model Confidence</span>: <strong>{{ result.confidence }}%</strong></span>
-</div>
-</div>
-<!-- Probability Distribution -->
+                <!-- Primary Classification Outcome Card -->
+                <div class="p-4 rounded-3 card-glass mb-4 text-center" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%); border-color: rgba(59, 130, 246, 0.4);">
+                    <span class="text-secondary small text-uppercase letter-spacing-1 fw-bold d-block mb-1" data-i18n="clf_pred_class">Predicted Functional Class</span>
+                    <h2 class="text-dark fw-bold brand-font mb-2">{{ result.predicted_class }}</h2>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill card-glass">
+                        <i class="bi bi-patch-check-fill text-emerald"></i>
+                        <span class="text-dark fw-semibold"><span data-i18n="clf_conf">Model Confidence</span>: <strong>{{ result.confidence }}%</strong></span>
+                    </div>
+                </div>
+                <!-- Probability Distribution -->
                 {% if result.probabilities %}
                 <h6 class="text-dark fw-bold mb-2"><i class="bi bi-bar-chart-steps text-cyan me-1"></i> <span data-i18n="clf_prob_spectrum">Class Probability Spectrum</span></h6>
-<div class="d-flex flex-column gap-2 mb-4">
+                <div class="d-flex flex-column gap-2 mb-4">
                     {% for cname, pval in result.probabilities.items() %}
                     <div>
-<div class="d-flex justify-content-between text-secondary small mb-1">
-<span class="{% if cname == result.predicted_class %}text-dark fw-bold{% endif %}">{{ cname }}</span>
-<span class="font-mono {% if cname == result.predicted_class %}text-emerald fw-bold{% endif %}">{{ pval }}%</span>
-</div>
-<div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
-<div aria-valuemax="100" aria-valuemin="0" aria-valuenow="{{ pval }}" class="progress-bar {% if cname == result.predicted_class %}bg-emerald{% else %}bg-secondary{% endif %}" role="progressbar" style="width: {{ pval }}%;"></div>
-</div>
-</div>
+                        <div class="d-flex justify-content-between text-secondary small mb-1">
+                            <span class="{% if cname == result.predicted_class %}text-dark fw-bold{% endif %}">{{ cname }}</span>
+                            <span class="font-mono {% if cname == result.predicted_class %}text-emerald fw-bold{% endif %}">{{ pval }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
+                            <div aria-valuemax="100" aria-valuemin="0" aria-valuenow="{{ pval }}" class="progress-bar {% if cname == result.predicted_class %}bg-emerald{% else %}bg-secondary{% endif %}" role="progressbar" style="width: {{ pval }}%;"></div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
                 {% endif %}
 
                 <!-- Model Information & Architecture -->
-<div class="p-3 rounded-3 card-glass" style="background: rgba(0,0,0,0.25);">
-<div class="row g-2 small text-secondary">
-<div class="col-sm-6">
-<strong data-i18n="dis_algo_label">Algorithm:</strong> {{ result.model_name }}
+                <div class="p-3 rounded-3 card-glass" style="background: rgba(0,0,0,0.25);">
+                    <div class="row g-2 small text-secondary">
+                        <div class="col-sm-6">
+                            <strong data-i18n="dis_algo_label">Algorithm:</strong> {{ result.model_name }}
                         </div>
-<div class="col-sm-6" data-i18n="auto_817afe">
-<strong data-i18n="clf_feature_extr">Feature Extraction:</strong> 64 Trinucleotide k-mers + GC
+                        <div class="col-sm-6">
+                            <strong data-i18n="clf_feature_extr">Feature Extraction:</strong> <span data-i18n="clf_feature_desc">64 Trinucleotide k-mers + GC</span>
                         </div>
                         {% if result.metrics %}
                         <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-25">
-<strong data-i18n="clf_bench_perf">Benchmark Model Performance:</strong> <span data-i18n="clf_acc">Accuracy</span>: <span class="text-emerald fw-bold">{{ result.metrics.accuracy }}%</span> | <span data-i18n="dis_f1_hdr">F1-Score</span>: <span class="text-cyan fw-bold">{{ result.metrics.f1_score }}%</span>
-</div>
+                            <strong data-i18n="clf_bench_perf">Benchmark Model Performance:</strong> <span data-i18n="clf_acc">Accuracy</span>: <span class="text-emerald fw-bold">{{ result.metrics.accuracy }}%</span> | <span data-i18n="dis_f1_hdr">F1-Score</span>: <span class="text-cyan fw-bold">{{ result.metrics.f1_score }}%</span>
+                        </div>
                         {% endif %}
                     </div>
-</div>
-</div>
+                </div>
+            </div>
             {% else %}
             <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
-<i class="bi bi-cpu text-muted" style="font-size: 3.5rem;"></i>
-<h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="clf_awaiting">Awaiting Sequence for Classification</h5>
-<p class="text-secondary small mx-auto" data-i18n="clf_awaiting_desc" style="max-width: 420px;">
+                <i class="bi bi-cpu text-muted" style="font-size: 3.5rem;"></i>
+                <h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="clf_awaiting">Awaiting Sequence for Classification</h5>
+                <p class="text-secondary small mx-auto" data-i18n="clf_awaiting_desc" style="max-width: 420px;">
                     Input a DNA sequence to extract trinucleotide k-mer frequencies and evaluate biological category probabilities with the trained machine learning model.
                 </p>
-</div>
+            </div>
             {% endif %}
         </div>
-</div>
+    </div>
 </div>
 {% endblock %}

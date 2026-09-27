@@ -17,6 +17,54 @@
   --shadow: 0 8px 32px rgba(109, 40, 217, 0.08);
 }
 
+[data-theme="dark"],
+[data-bs-theme="dark"],
+html.dark-theme,
+body.dark-theme {
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --surface2: #334155;
+  --border: #334155;
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+}
+
+[data-theme="dark"] .danger-counter,
+html.dark-theme .danger-counter {
+  color: #FCA5A5;
+  border-color: rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.15);
+}
+
+[data-theme="dark"] .status.ok,
+[data-theme="dark"] .risk.low,
+html.dark-theme .status.ok,
+html.dark-theme .risk.low {
+  color: #34D399;
+  background: rgba(5, 150, 105, 0.15);
+  border-color: rgba(5, 150, 105, 0.4);
+}
+
+[data-theme="dark"] .status.off,
+[data-theme="dark"] .risk.high,
+[data-theme="dark"] .risk.elevated,
+html.dark-theme .status.off,
+html.dark-theme .risk.high,
+html.dark-theme .risk.elevated {
+  color: #F87171;
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+[data-theme="dark"] .risk.moderate,
+html.dark-theme .risk.moderate {
+  color: #FBBF24;
+  background: rgba(217, 119, 6, 0.15);
+  border-color: rgba(217, 119, 6, 0.4);
+}
+
+
 
 
 * { box-sizing: border-box; }

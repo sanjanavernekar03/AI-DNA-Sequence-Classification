@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}DNA Similarity Analysis â€” DNAura{% endblock %}
+{% block title %}DNA Similarity Analysis — DNAura{% endblock %}
 
 {% block content %}
 <span data-i18n="sim_page_title" id="page-i18n-title" style="display:none;"></span>
@@ -35,7 +35,7 @@
                             document.getElementById('qry_name_input').value='Human TP53 Mutant (Simulated SNVs)';
                             let mutSeq = '{{ samples.human_tp53.sequence }}';
                             document.getElementById('qry_seq_input').value = mutSeq.substring(0,25) + 'A' + mutSeq.substring(26,60) + 'T' + mutSeq.substring(61);
-                            showToast('Benchmark Loaded', 'Loaded TP53 Wildtype vs Simulated Mutant pair.', 'info');
+                            showToast((window.getI18nText?window.getI18nText('js_sample_loaded','Benchmark Loaded'):'Benchmark Loaded'), (window.getI18nText?window.getI18nText('js_bench_tp53_loaded','Loaded TP53 Wildtype vs Simulated Mutant pair.'):'Loaded TP53 Wildtype vs Simulated Mutant pair.'), 'info');
                         " type="button">
 <span data-i18n="sim_bench_tp53">TP53 Wildtype vs Mutant (Point SNVs)</span>
 </button>
@@ -45,7 +45,7 @@
                             document.getElementById('qry_name_input').value='BRCA1 Homolog';
                             let bSeq = '{{ samples.brca1_exon11.sequence }}';
                             document.getElementById('qry_seq_input').value = bSeq.substring(0,40) + 'CGTA' + bSeq.substring(44);
-                            showToast('Benchmark Loaded', 'Loaded BRCA1 sequence pair.', 'info');
+                            showToast((window.getI18nText?window.getI18nText('js_sample_loaded','Benchmark Loaded'):'Benchmark Loaded'), (window.getI18nText?window.getI18nText('js_bench_brca1_loaded','Loaded BRCA1 sequence pair.'):'Loaded BRCA1 sequence pair.'), 'info');
                         " type="button">
 <span data-i18n="sim_bench_brca1">BRCA1 Exon 11 Pair</span>
 </button>
@@ -61,16 +61,16 @@
 <!-- Reference Sequence -->
 <div class="mb-3">
 <label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_name">Reference Sequence Name</label>
-<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_ref_name" data-i18n-value="sim_ref_default" id="ref_name_input" name="reference_name" placeholder="e.g. Reference Wildtype" type="text" value="{{ ref_name|default('') }}"/>
+<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_ref_name" id="ref_name_input" name="reference_name" placeholder="e.g. Reference Wildtype" type="text" value="{{ ref_name|default('') }}"/>
 <label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_seq">Reference DNA (A, T, G, C)</label>
-<textarea class="form-control form-control-custom" id="ref_seq_input" name="reference_sequence" placeholder="ATGCGTAC..." required="" rows="5">{{ ref_seq|default('') }}</textarea>
+<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="ref_seq_input" name="reference_sequence" placeholder="ATGCGTAC..." required="" rows="5">{{ ref_seq|default('') }}</textarea>
 </div>
 <!-- Query Sequence -->
 <div class="mb-4">
 <label class="form-label text-secondary small fw-medium" data-i18n="sim_query_name">Query / Sample Sequence Name</label>
-<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_query_name" data-i18n-value="sim_query_default" id="qry_name_input" name="query_name" placeholder="e.g. Query Sample" type="text" value="{{ query_name|default('') }}"/>
+<input class="form-control form-control-custom mb-2" data-i18n-placeholder="sim_query_name" id="qry_name_input" name="query_name" placeholder="e.g. Query Sample" type="text" value="{{ query_name|default('') }}"/>
 <label class="form-label text-secondary small fw-medium" data-i18n="sim_query_seq">Query DNA (A, T, G, C)</label>
-<textarea class="form-control form-control-custom" id="qry_seq_input" name="query_sequence" placeholder="ATGAGTAC..." required="" rows="5">{{ query_seq|default('') }}</textarea>
+<textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="qry_seq_input" name="query_sequence" placeholder="ATGAGTAC..." required="" rows="5">{{ query_seq|default('') }}</textarea>
 </div>
 <button class="btn btn-cyan-gradient w-100 py-2" type="submit">
 <i class="bi bi-arrow-left-right"></i> <span data-i18n="sim_run_align">Run Sequence Alignment</span>
@@ -85,7 +85,7 @@
 <div class="d-flex align-items-center justify-content-between mb-3">
 <div>
 <h5 class="fw-bold mb-0" style="color: var(--text-main);"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="sim_results">Alignment &amp; Similarity Metrics</span></h5>
-<span class="text-secondary small">{{ result.reference_name }} â†” {{ result.query_name }}</span>
+<span class="text-secondary small">{{ result.reference_name }} ↔ {{ result.query_name }}</span>
 </div>
                     {% if result.id %}
                     <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
@@ -122,13 +122,13 @@
 <h6 class="fw-bold mb-2" style="color: var(--text-main);"><i class="bi bi-text-left text-cyan me-1"></i> <span data-i18n="sim_map">Visual Pairwise Alignment Map</span></h6>
 <div class="d-flex gap-3 mb-2 small text-secondary">
 <span><span class="char-match px-1">|</span> <span data-i18n="sim_legend_match">Match</span></span>
-<span><span class="char-mismatch px-1" data-i18n="gen_x_0212">X</span> <span data-i18n="sim_legend_mismatch">Mismatch</span></span>
+<span><span class="char-mismatch px-1">X</span> <span data-i18n="sim_legend_mismatch">Mismatch</span></span>
 <span><span class="char-gap px-1">-</span> <span data-i18n="sim_legend_gap">Gap / Indel</span></span>
 </div>
 <div class="alignment-container mb-3">
                     {% for block in result.visual_blocks %}
                     <div class="align-block">
-<div class="small text-muted mb-1"><span data-i18n="sim_coord">Coordinates</span>: {{ block.start_pos }} â€“ {{ block.end_pos }} bp</div>
+<div class="small text-muted mb-1"><span data-i18n="sim_coord">Coordinates</span>: {{ block.start_pos }} – {{ block.end_pos }} bp</div>
 <!-- Ref Row -->
 <div class="align-row">
 <span class="align-label" data-i18n="sim_ref_label">REF:</span>

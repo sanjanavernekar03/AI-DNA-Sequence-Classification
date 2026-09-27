@@ -1,142 +1,140 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}Mutation Detection &amp; Analysis â€” DNAura{% endblock %}
+{% block title %}Mutation Detection &amp; Analysis — DNAura{% endblock %}
 
 {% block content %}
 <span data-i18n="mut_page_title" id="page-i18n-title" style="display:none;"></span>
 <div class="container-fluid px-0">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-<div>
-<div class="d-flex align-items-center gap-2 mb-1">
-<span class="badge badge-g" data-i18n="dash_mod3_title"><i class="bi bi-diagram-3 me-1"></i> Mutation Detection</span>
-<h2 class="fw-bold mb-0" data-i18n="mut_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">Mutation Detection &amp; Sequence Mapping</h2>
-</div>
-<p class="small mb-0" data-i18n="mut_desc" style="color: var(--text-secondary, #475569);">Identifies point substitutions (Transitions &amp; Transversions), insertions, and deletions with exact nucleotide coordinates.</p>
-</div>
-<div class="d-flex gap-2">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-g" data-i18n="dash_mod3_title"><i class="bi bi-diagram-3 me-1"></i> Mutation Detection</span>
+                <h2 class="fw-bold mb-0" data-i18n="mut_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">Mutation Detection &amp; Sequence Mapping</h2>
+            </div>
+            <p class="small mb-0" data-i18n="mut_desc" style="color: var(--text-secondary, #475569);">Identifies point substitutions (Transitions &amp; Transversions), insertions, and deletions with exact nucleotide coordinates.</p>
+        </div>
+        <div class="d-flex gap-2">
             {% if result and result.id %}
             <a class="btn btn-cyan-gradient" href="{{ url_for('reports.generate', analysis_type='mutation', analysis_id=result.id) }}">
-<i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
-</a>
+                <i class="bi bi-file-earmark-pdf-fill"></i> <span data-i18n="mod_gen_pdf">Generate PDF Report</span>
+            </a>
             {% endif %}
             <a class="btn btn-outline-custom" href="{{ url_for('mutation.index') }}">
-<i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
-</a>
-</div>
-</div>
-<!-- SAMPLE LOADER BAR -->
-<div class="card-glass p-3 mb-4">
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-<span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mut_prepopulate">Pre-populate Mutation Scenarios:</span></span>
-<div class="d-flex flex-wrap gap-2">
-<button class="btn btn-sm btn-outline-custom" onclick="
-                            document.getElementById('ref_name_input').value='Beta-Globin (HBB) Wildtype';
-                            document.getElementById('ref_seq_input').value='{{ samples.hbb_sickle_cell.sequence }}';
-                            document.getElementById('smp_name_input').value='HBB Codon 6 Variant (GAG-&gt;GTG)';
-                            let hbb = '{{ samples.hbb_sickle_cell.sequence }}';
-                            // Sickle cell mutation GAG -&gt; GTG at pos 20
-                            document.getElementById('smp_seq_input').value = hbb.substring(0,19) + 'T' + hbb.substring(20,80) + 'A' + hbb.substring(81,140) + 'C' + hbb.substring(141);
-                            showToast('Sample Loaded', 'Loaded HBB Beta-Globin Point Mutation benchmark.', 'info');
-                        " type="button">
-<span data-i18n="mut_hbb_bench">Beta-Globin (HBB) Point Mutations</span>
-</button>
-<button class="btn btn-sm btn-outline-custom" onclick="
-                            document.getElementById('ref_name_input').value='CFTR Wildtype Exon';
-                            document.getElementById('ref_seq_input').value='{{ samples.cftr_delta_f508.sequence }}';
-                            document.getElementById('smp_name_input').value='CFTR Simulated Deletion &amp; Insertion';
-                            let cftr = '{{ samples.cftr_delta_f508.sequence }}';
-                            // Introduce deletion and insertion
-                            document.getElementById('smp_seq_input').value = cftr.substring(0,30) + cftr.substring(33,90) + 'AAAA' + cftr.substring(90);
-                            showToast('Sample Loaded', 'Loaded CFTR Indel Mutation benchmark.', 'info');
-                        " type="button">
-<span data-i18n="mut_cftr_bench">CFTR Indel / Deletion Hotspot</span>
-</button>
-</div>
-</div>
-</div>
-<div class="row g-4 mb-4">
-<!-- INPUT FORM -->
-<div class="col-lg-5">
-<div class="card-glass p-4 h-100">
-<h5 class="text-dark fw-bold mb-3"><i class="bi bi-crosshair text-warning me-2"></i> <span data-i18n="mut_caller_title">Sequence Mutation Caller</span></h5>
-<form method="POST">
-<div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="mut_ref_name">Reference (Wildtype) Name</label>
-<input class="form-control form-control-custom mb-2" data-i18n-placeholder="mut_ref_name" data-i18n-value="sim_ref_default" id="ref_name_input" name="reference_name" placeholder="e.g. Wildtype Reference" type="text" value="{{ ref_name|default('') }}"/>
-<label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_seq">Reference DNA (A, T, G, C)</label>
-<textarea class="form-control form-control-custom" id="ref_seq_input" name="reference_sequence" placeholder="ATGCGTAC..." required="" rows="5">{{ ref_seq|default('') }}</textarea>
-</div>
-<div class="mb-4">
-<label class="form-label text-secondary small fw-medium" data-i18n="mut_sample_name">Sample / Mutant Name</label>
-<input class="form-control form-control-custom mb-2" data-i18n-placeholder="mut_sample_name" data-i18n-value="sim_query_default" id="smp_name_input" name="sample_name" placeholder="e.g. Sample / Patient DNA" type="text" value="{{ sample_name|default('') }}"/>
-<label class="form-label text-secondary small fw-medium" data-i18n="mut_sample_seq">Sample DNA (A, T, G, C)</label>
-<textarea class="form-control form-control-custom" id="smp_seq_input" name="sample_sequence" placeholder="ATGAGTAC..." required="" rows="5">{{ sample_seq|default('') }}</textarea>
-</div>
-<button class="btn btn-primary-gradient w-100 py-2" style="background: linear-gradient(135deg, #F59E0B, #D97706);" type="submit">
-<i class="bi bi-search"></i> <span data-i18n="mut_detect_btn">Detect &amp; Map Mutations</span>
-</button>
-</form>
-</div>
-</div>
-<!-- RESULTS SECTION -->
-<div class="col-lg-7">
+                <i class="bi bi-arrow-clockwise"></i> <span data-i18n="btn_reset">Reset</span>
+            </a>
+        </div>
+    </div>
+    <!-- SAMPLE LOADER BAR -->
+    <div class="card-glass p-3 mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-secondary small fw-medium"><i class="bi bi-bookmark-star-fill text-warning me-1"></i> <span data-i18n="mut_prepopulate">Pre-populate Mutation Scenarios:</span></span>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-outline-custom" onclick="
+                    document.getElementById('ref_name_input').value='Beta-Globin (HBB) Wildtype';
+                    document.getElementById('ref_seq_input').value='{{ samples.hbb_sickle_cell.sequence }}';
+                    document.getElementById('smp_name_input').value='HBB Codon 6 Variant (GAG-&gt;GTG)';
+                    let hbb = '{{ samples.hbb_sickle_cell.sequence }}';
+                    document.getElementById('smp_seq_input').value = hbb.substring(0,19) + 'T' + hbb.substring(20,80) + 'A' + hbb.substring(81,140) + 'C' + hbb.substring(141);
+                    showToast(getI18nText('js_sample_loaded') || 'Sample Loaded', getI18nText('js_bench_hbb_loaded') || 'Loaded HBB Beta-Globin Point Mutation benchmark.', 'info');
+                " type="button">
+                    <span data-i18n="mut_hbb_bench">Beta-Globin (HBB) Point Mutations</span>
+                </button>
+                <button class="btn btn-sm btn-outline-custom" onclick="
+                    document.getElementById('ref_name_input').value='CFTR Wildtype Exon';
+                    document.getElementById('ref_seq_input').value='{{ samples.cftr_delta_f508.sequence }}';
+                    document.getElementById('smp_name_input').value='CFTR Simulated Deletion &amp; Insertion';
+                    let cftr = '{{ samples.cftr_delta_f508.sequence }}';
+                    document.getElementById('smp_seq_input').value = cftr.substring(0,30) + cftr.substring(33,90) + 'AAAA' + cftr.substring(90);
+                    showToast(getI18nText('js_sample_loaded') || 'Sample Loaded', getI18nText('js_bench_cftr_loaded') || 'Loaded CFTR Indel Mutation benchmark.', 'info');
+                " type="button">
+                    <span data-i18n="mut_cftr_bench">CFTR Indel / Deletion Hotspot</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <!-- INPUT FORM -->
+        <div class="col-lg-5">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-dark fw-bold mb-3"><i class="bi bi-crosshair text-warning me-2"></i> <span data-i18n="mut_caller_title">Sequence Mutation Caller</span></h5>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-i18n="mut_ref_name">Reference (Wildtype) Name</label>
+                        <input class="form-control form-control-custom mb-2" data-i18n-placeholder="ph_ref_name_eg" id="ref_name_input" name="reference_name" placeholder="e.g. Wildtype Reference" type="text" value="{{ ref_name|default('') }}"/>
+                        <label class="form-label text-secondary small fw-medium" data-i18n="sim_ref_seq">Reference DNA (A, T, G, C)</label>
+                        <textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="ref_seq_input" name="reference_sequence" placeholder="ATGCGTAC..." required="" rows="5">{{ ref_seq|default('') }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium" data-i18n="mut_sample_name">Sample / Mutant Name</label>
+                        <input class="form-control form-control-custom mb-2" data-i18n-placeholder="ph_sample_name_eg" id="smp_name_input" name="sample_name" placeholder="e.g. Sample / Patient DNA" type="text" value="{{ sample_name|default('') }}"/>
+                        <label class="form-label text-secondary small fw-medium" data-i18n="mut_sample_seq">Sample DNA (A, T, G, C)</label>
+                        <textarea class="form-control form-control-custom" data-i18n-placeholder="ph_dna_seq" id="smp_seq_input" name="sample_sequence" placeholder="ATGAGTAC..." required="" rows="5">{{ sample_seq|default('') }}</textarea>
+                    </div>
+                    <button class="btn btn-primary-gradient w-100 py-2" style="background: linear-gradient(135deg, #F59E0B, #D97706);" type="submit">
+                        <i class="bi bi-search"></i> <span data-i18n="mut_detect_btn">Detect &amp; Map Mutations</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- RESULTS SECTION -->
+        <div class="col-lg-7">
             {% if result %}
             <div class="card-glass p-4 h-100">
-<div class="d-flex align-items-center justify-content-between mb-3">
-<div>
-<h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="mut_summary_title">Mutation Analysis Summary</span></h5>
-<span class="text-secondary small">{{ result.reference_name }} vs {{ result.sample_name }}</span>
-</div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="text-dark fw-bold mb-0"><i class="bi bi-check-circle-fill text-emerald me-2"></i> <span data-i18n="mut_summary_title">Mutation Analysis Summary</span></h5>
+                        <span class="text-secondary small">{{ result.reference_name }} vs {{ result.sample_name }}</span>
+                    </div>
                     {% if result.id %}
                     <span class="badge bg-dark border border-secondary text-secondary">Record #{{ result.id }}</span>
                     {% endif %}
                 </div>
-<!-- Primary Mutation Stat Chips -->
-<div class="row g-3 mb-4">
-<div class="col-sm-6 col-md-3">
-<div class="p-3 rounded-3 card-glass text-center">
-<span class="text-secondary small d-block mb-1" data-i18n="mut_total">Total Mutations</span>
-<h3 class="text-warning fw-bold mb-0 font-mono">{{ result.total_mutations }}</h3>
-</div>
-</div>
-<div class="col-sm-6 col-md-3">
-<div class="p-3 rounded-3 card-glass text-center">
-<span class="text-secondary small d-block mb-1" data-i18n="mut_subst">Substitutions (SNVs)</span>
-<h3 class="text-danger fw-bold mb-0 font-mono">{{ result.substitutions_count }}</h3>
-</div>
-</div>
-<div class="col-sm-6 col-md-3">
-<div class="p-3 rounded-3 card-glass text-center">
-<span class="text-secondary small d-block mb-1" data-i18n="mut_insert">Insertions</span>
-<h3 class="text-emerald fw-bold mb-0 font-mono">{{ result.insertions_count }}</h3>
-</div>
-</div>
-<div class="col-sm-6 col-md-3">
-<div class="p-3 rounded-3 card-glass text-center">
-<span class="text-secondary small d-block mb-1" data-i18n="mut_delet">Deletions</span>
-<h3 class="text-cyan fw-bold mb-0 font-mono">{{ result.deletions_count }}</h3>
-</div>
-</div>
-</div>
-<!-- Detailed Mutation Table -->
-<h6 class="text-dark fw-bold mb-2"><i class="bi bi-table text-warning me-1"></i> <span data-i18n="mut_catalog_title">Mutation Coordinates Catalog</span></h6>
-<div class="table-responsive mb-3" style="max-height: 260px; overflow-y: auto;">
-<table class="table-custom">
-<thead>
-<tr>
-<th data-i18n="mut_pos">Pos (bp)</th>
-<th data-i18n="mut_type">Type</th>
-<th data-i18n="mut_ref">Reference</th>
-<th data-i18n="mut_obs">Observed</th>
-<th data-i18n="mut_desc_ctx">Description / Context</th>
-</tr>
-</thead>
-<tbody>
+                <!-- Primary Mutation Stat Chips -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="p-3 rounded-3 card-glass text-center">
+                            <span class="text-secondary small d-block mb-1" data-i18n="mut_total">Total Mutations</span>
+                            <h3 class="text-warning fw-bold mb-0 font-mono">{{ result.total_mutations }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="p-3 rounded-3 card-glass text-center">
+                            <span class="text-secondary small d-block mb-1" data-i18n="mut_subst">Substitutions (SNVs)</span>
+                            <h3 class="text-danger fw-bold mb-0 font-mono">{{ result.substitutions_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="p-3 rounded-3 card-glass text-center">
+                            <span class="text-secondary small d-block mb-1" data-i18n="mut_insert">Insertions</span>
+                            <h3 class="text-emerald fw-bold mb-0 font-mono">{{ result.insertions_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="p-3 rounded-3 card-glass text-center">
+                            <span class="text-secondary small d-block mb-1" data-i18n="mut_delet">Deletions</span>
+                            <h3 class="text-cyan fw-bold mb-0 font-mono">{{ result.deletions_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Detailed Mutation Table -->
+                <h6 class="text-dark fw-bold mb-2"><i class="bi bi-table text-warning me-1"></i> <span data-i18n="mut_catalog_title">Mutation Coordinates Catalog</span></h6>
+                <div class="table-responsive mb-3" style="max-height: 260px; overflow-y: auto;">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th data-i18n="mut_pos">Pos (bp)</th>
+                                <th data-i18n="mut_type">Type</th>
+                                <th data-i18n="mut_ref">Reference</th>
+                                <th data-i18n="mut_obs">Observed</th>
+                                <th data-i18n="mut_desc_ctx">Description / Context</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {% if result.mutations_list %}
                                 {% for m in result.mutations_list %}
                                 <tr>
-<td class="font-mono text-dark fw-bold">#{{ m.position }}</td>
-<td>
+                                    <td class="font-mono text-dark fw-bold">#{{ m.position }}</td>
+                                    <td>
                                         {% if m.type == 'Substitution' or m.mutation_type == 'Substitution' %}
                                         <span class="badge badge-t" data-i18n="mod_subst">Substitution</span>
                                         {% elif m.type == 'Insertion' or m.mutation_type == 'Insertion' %}
@@ -145,35 +143,35 @@
                                         <span class="badge badge-g" data-i18n="mod_delet">Deletion</span>
                                         {% endif %}
                                     </td>
-<td class="font-mono text-secondary fw-bold">{{ m.ref_base or m.reference_base }}</td>
-<td class="font-mono text-emerald fw-bold">{{ m.obs_base or m.observed_base }}</td>
-<td class="small text-secondary">{{ m.note or m.consequence_note }}</td>
-</tr>
+                                    <td class="font-mono text-secondary fw-bold">{{ m.ref_base or m.reference_base }}</td>
+                                    <td class="font-mono text-emerald fw-bold">{{ m.obs_base or m.observed_base }}</td>
+                                    <td class="small text-secondary">{{ m.note or m.consequence_note }}</td>
+                                </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
-<td class="text-center text-muted py-3" colspan="5" data-i18n="mut_homologous">No mutations detected. Sequences are 100% homologous.</td>
-</tr>
+                                    <td class="text-center text-muted py-3" colspan="5" data-i18n="mut_homologous">No mutations detected. Sequences are 100% homologous.</td>
+                                </tr>
                             {% endif %}
                         </tbody>
-</table>
-</div>
-<div class="p-3 rounded-3 card-glass" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2);">
-<small class="text-warning" data-i18n="mut_sci_caution">
-<i class="bi bi-info-circle me-1"></i> <strong data-i18n="gen_scientific_caution_0eb1">Scientific Caution:</strong> DNA point variations identified above are called through sequence alignment. Functional pathogenicity must be validated against reference databases.
+                    </table>
+                </div>
+                <div class="p-3 rounded-3 card-glass" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2);">
+                    <small class="text-warning">
+                        <i class="bi bi-info-circle me-1"></i> <strong data-i18n="gen_scientific_caution_0eb1">Scientific Caution:</strong> <span data-i18n="mut_sci_caution">DNA point variations identified above are called through sequence alignment. Functional pathogenicity must be validated against reference databases.</span>
                     </small>
-</div>
-</div>
+                </div>
+            </div>
             {% else %}
             <div class="card-glass p-5 text-center h-100 d-flex flex-column justify-content-center">
-<i class="bi bi-crosshair text-muted" style="font-size: 3.5rem;"></i>
-<h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="mut_awaiting_title">Awaiting Mutation Comparison</h5>
-<p class="text-secondary small mx-auto" data-i18n="mut_awaiting_desc" style="max-width: 420px;">
+                <i class="bi bi-crosshair text-muted" style="font-size: 3.5rem;"></i>
+                <h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="mut_awaiting_title">Awaiting Mutation Comparison</h5>
+                <p class="text-secondary small mx-auto" data-i18n="mut_awaiting_desc" style="max-width: 420px;">
                     Provide reference and sample sequences to locate point variations, frameshift insertions, and deletions across all sequence coordinates.
                 </p>
-</div>
+            </div>
             {% endif %}
         </div>
-</div>
+    </div>
 </div>
 {% endblock %}

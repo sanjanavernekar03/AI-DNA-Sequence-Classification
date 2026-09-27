@@ -105,13 +105,6 @@
                     <i class="bi bi-moon-stars-fill theme-icon-dark" style="display: none;"></i>
                     <i class="bi bi-sun-fill theme-icon-light"></i>
                 </button>
-                <select class="form-select form-select-sm global-lang-select" style="width: auto; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी</option>
-                    <option value="kn">ಕನ್ನಡ</option>
-                    <option value="ta">தமிழ்</option>
-                    <option value="te">తెలుగు</option>
-                </select>
                 <a class="profile-chip" href="{{ url_for('admin.settings') }}">
                     <div class="avatar sm">A</div>
                     <span>{{ session.get('admin_username', 'Admin') }}</span>

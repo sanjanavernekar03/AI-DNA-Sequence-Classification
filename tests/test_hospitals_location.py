@@ -23,7 +23,7 @@ class TestHospitalsLocationModes(unittest.TestCase):
         """Test Option 2: Device geolocation coordinates (lat/lng)."""
         res = self.client.get('/hospitals/?lat=12.9716&lng=77.5946')
         self.assertEqual(res.status_code, 200)
-        self.assertIn(b"Current Device Location", res.data)
+        self.assertIn(b"CURRENT LOCATION", res.data)
 
     def test_option_3_manual_location_search(self):
         """Test Option 3: Manual address or city search."""

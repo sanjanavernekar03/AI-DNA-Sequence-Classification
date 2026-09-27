@@ -1,6 +1,6 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}DNA Sequence Processing &amp; Analysis â€” DNAura{% endblock %}
+{% block title %}DNA Sequence Processing & Analysis — DNAura{% endblock %}
 
 {% block content %}
 <span data-i18n="seq_page_title" id="page-i18n-title" style="display:none;"></span>
@@ -8,10 +8,10 @@
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
 <div>
 <div class="d-flex align-items-center gap-2 mb-1">
-<span class="badge badge-a" data-i18n="welcome_mod1_title"><i class="bi bi-file-earmark-code me-1"></i> Sequence Processing</span>
-<h2 class="fw-bold mb-0" data-i18n="welcome_mod1_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Processing &amp; Analysis</h2>
+<span class="badge badge-a" data-i18n="seq_badge"><i class="bi bi-file-earmark-code me-1"></i> PRIMARY BIOINFORMATICS</span>
+<h2 class="fw-bold mb-0" data-i18n="seq_title" style="font-size: 1.5rem; color: var(--text-main, #0F172A);">DNA Sequence Processing &amp; Analysis</h2>
 </div>
-<p class="small mb-0" data-i18n="welcome_mod1_desc" style="color: var(--text-secondary, #475569);">Validates strict A, T, G, C nucleotides, calculates nucleotide frequencies, GC/AT ratios, and physicochemical properties.</p>
+<p class="small mb-0" data-i18n="seq_desc" style="color: var(--text-secondary, #475569);">Validates strict A, T, G, C nucleotides, calculates nucleotide frequencies, GC/AT ratios, and physicochemical properties.</p>
 </div>
 <div class="d-flex gap-2">
             {% if result and result.id %}
@@ -41,26 +41,26 @@
 <!-- INPUT FORM -->
 <div class="col-lg-5">
 <div class="card-glass p-4 h-100">
-<h5 class="text-dark fw-bold mb-3"><i class="bi bi-input-cursor text-emerald me-2"></i> <span data-i18n="mod_seq_input">Sequence Input</span></h5>
+<h5 class="text-dark fw-bold mb-3"><i class="bi bi-input-cursor text-emerald me-2"></i> <span data-i18n="seq_input_title">Sequence Input</span></h5>
 <form enctype="multipart/form-data" method="POST">
 <div class="mb-3">
-<label class="form-label text-secondary small fw-medium" data-i18n="mod_seq_id">Sequence Identifier / Name</label>
-<input class="form-control form-control-custom" data-i18n-placeholder="mod_seq_id" id="sequence_name_input" name="sequence_name" placeholder="e.g. Human TP53 Exon 1" type="text" value="{{ sequence_name|default('') }}"/>
+<label class="form-label text-secondary small fw-medium" data-i18n="seq_id_label">Sequence Identifier / Name</label>
+<input class="form-control form-control-custom" data-i18n-placeholder="seq_id_label" id="sequence_name_input" name="sequence_name" placeholder="e.g. Human TP53 Exon 1" type="text" value="{{ sequence_name|default('') }}"/>
 </div>
 <div class="mb-3">
 <div class="d-flex justify-content-between align-items-center mb-1">
-<label class="form-label text-secondary small fw-medium mb-0" data-i18n="mod_raw_dna">Raw DNA Sequence (A, T, G, C)</label>
-<span class="small text-emerald" data-i18n="seq_len_gc" id="seq_counter">Length: 0 bp | GC: 0%</span>
+<label class="form-label text-secondary small fw-medium mb-0" data-i18n="seq_input_label">Raw DNA Sequence (A, T, G, C)</label>
+<span class="small text-emerald" id="seq_counter"><span data-i18n="mod_seq_len">Length</span>: <strong>0 bp</strong> | GC: <strong>0%</strong></span>
 </div>
-<textarea class="form-control form-control-custom" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
+<textarea class="form-control form-control-custom" data-counter-id="seq_counter" data-i18n-placeholder="seq_input_ph" id="sequence_input" name="sequence" placeholder="ATGCGATCGATCGATC..." required="" rows="8">{{ input_sequence|default('') }}</textarea>
 </div>
 <div class="mb-4">
-<label class="form-label text-secondary small fw-medium" data-i18n="gen_fasta_fa_txt_9b41"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span> (.fasta, .fa, .txt)</label>
+<label class="form-label text-secondary small fw-medium"><span data-i18n="mod_file_upload">Or Upload FASTA / Text File</span> <span data-i18n="gen_fasta_fa_txt_9b41">(.fasta, .fa, .txt)</span></label>
 <input accept=".txt,.fasta,.fa,.dna,.fna" class="form-control form-control-custom" name="dna_file" type="file"/>
 </div>
 <div class="d-flex gap-2">
 <button class="btn btn-primary-gradient flex-grow-1 py-2" type="submit">
-<i class="bi bi-play-circle-fill"></i> <span data-i18n="mod_run_analysis">Analyze Sequence</span>
+<i class="bi bi-play-circle-fill"></i> <span data-i18n="seq_btn_analyze">Analyze Sequence</span>
 </button>
 <button class="btn btn-outline-custom" onclick="document.getElementById('sequence_input').value='';" type="button">
 <span data-i18n="btn_clear">Clear</span>

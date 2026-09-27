@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Hospitals &amp; Doctors â€” DNAura{% endblock %}
+{% block title %}Hospitals &amp; Doctors — DNAura{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -52,8 +52,8 @@
 <p class="small mb-0" data-i18n="hosp_subtitle" style="color: var(--text-secondary, #536174);">Find the closest medical centers, hospitals, and available doctors.</p>
 </div>
 <div class="d-flex flex-wrap gap-2">
-<a class="btn btn-outline-primary fw-medium px-3 py-2" href="{{ url_for('hospitals.index') }}" style="border-radius: 8px;" title="Use your registered account address">
-<i class="bi bi-house-door-fill me-1"></i> Use Registered Address
+<a class="btn btn-outline-primary fw-medium px-3 py-2" href="{{ url_for('hospitals.index', mode='registered') }}" style="border-radius: 8px;" title="Use your registered account address" data-i18n-title="hosp_title_reg_address">
+<i class="bi bi-house-door-fill me-1"></i> <span data-i18n="hosp_btn_reg_address">Use Registered Address</span>
 </a>
 <button class="btn text-white fw-medium px-3 py-2" data-i18n="gen_use_my_current_locat_ca87" id="btn-use-current-location" style="background-color: var(--secondary, #0F8B8D); border-radius: 8px;">
 <i class="bi bi-geo-alt-fill me-1"></i> Use My Current Location
@@ -62,24 +62,26 @@
 </div>
 <!-- Search Bar & Location Modes -->
 <div class="card border-0 shadow-sm p-3 mb-4" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
-<form action="{{ url_for('hospitals.index') }}" class="row g-3 align-items-end" id="hospital-search-form" method="GET">
-<div class="col-md-9">
+<form action="{{ url_for('hospitals.index') }}" id="hospital-search-form" method="GET">
 <label class="form-label small fw-medium mb-1" data-i18n="gen_search_by_address_fa_ddd6" style="color: var(--text-secondary, #536174);">Search by Address or City (Option 3 — Manual Search)</label>
+<div class="row g-2 align-items-center">
+<div class="col-md-9 col-sm-8">
 <div class="input-group">
 <span class="input-group-text" style="background: var(--bg-surface-elevated, #F1F5F9); border-color: var(--border-color, #D9E1EA); color: var(--primary, #1769AA);"><i class="bi bi-geo-alt"></i></span>
 <input class="form-control" data-i18n-placeholder="hosp_ph_search" id="hospital-location-input" name="location" placeholder="City, State, or Address (e.g. Manipal, Mangalore, Bengaluru)" required="" style="border-color: var(--border-color, #D9E1EA);" type="text" value="{{ search_location }}"/>
 </div>
-<div class="form-text mt-1 d-flex align-items-center justify-content-between" style="color: var(--text-muted, #718096); font-size: 0.75rem;">
-<span><span data-i18n="hosp_active_mode">Active Mode:</span> <strong class="text-primary">{{ location_mode|upper }} LOCATION</strong></span>
+</div>
+<div class="col-md-3 col-sm-4">
+<button class="btn w-100 py-2 fw-medium btn-outline-primary text-nowrap" data-i18n="gen_search_address_57da" style="border-radius: 8px;" type="submit">
+<i class="bi bi-search me-1"></i> Search Location
+</button>
+</div>
+</div>
+<div class="form-text mt-2 d-flex align-items-center justify-content-between flex-wrap gap-1" style="color: var(--text-muted, #718096); font-size: 0.75rem;">
+<span><span data-i18n="hosp_active_mode">Active Mode:</span> <strong class="text-primary" data-i18n="hosp_mode_{{ location_mode }}">{{ location_mode|upper }} LOCATION</strong></span>
 {% if registered_address %}
 <span><span data-i18n="hosp_reg_address">Registered Address:</span> <em>{{ registered_address }}</em></span>
 {% endif %}
-</div>
-</div>
-<div class="col-md-3">
-<button class="btn w-100 py-2 fw-medium btn-outline-primary" data-i18n="gen_search_address_57da" style="border-radius: 8px;" type="submit">
-<i class="bi bi-search me-1"></i> Search Location
-</button>
 </div>
 </form>
 </div>
@@ -124,7 +126,7 @@
 </div>
 <div class="d-flex flex-column align-items-sm-end justify-content-between gap-2">
 <span class="badge px-3 py-1 fw-semibold" style="font-size: 0.8rem; background: #E0F2F1; color: #00695C; border: 1px solid #B2DFDB;">
-<i class="bi bi-signpost-split me-1"></i>{{ h.distance_km }} km away
+<i class="bi bi-signpost-split me-1"></i>{{ h.distance_km }} <span data-i18n="hosp_km_away">km away</span>
                                     </span>
 <div class="d-flex gap-2">
 <a class="btn btn-sm btn-outline-secondary" data-i18n="hosp_directions" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ h.lat }},{{ h.lng }}" style="border-color: var(--border-color, #D9E1EA);" target="_blank">
@@ -161,19 +163,42 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&amp;libraries=places"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const userCoords = {{ user_coords|tojson if user_coords else 'null' }};
-    const hospitals = {{ hospitals|tojson if hospitals else '[]' }};
+    let userCoords = {{ user_coords|tojson if user_coords else 'null' }};
+    let hospitals = {{ hospitals|tojson if hospitals else '[]' }};
     
     let map;
     let markers = [];
+
+    function getText(key, fallback) {
+        if (window.LanguageManager && typeof window.LanguageManager.getText === 'function') {
+            return window.LanguageManager.getText(key, fallback);
+        }
+        return fallback;
+    }
     
-    function initMap(centerCoords) {
+    function initMap(centerCoords, hospitalsData) {
+        const mapEl = document.getElementById('hospital-map');
+        if (!mapEl) return;
+
+        const currentHospitals = hospitalsData || hospitals || [];
+
+        // Clear existing markers
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+
         if (!centerCoords) {
-            document.getElementById('hospital-map').innerHTML = '<div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted small"><i class="bi bi-map-fill fs-2 mb-2" style="color: var(--border-color, #D9E1EA);"></i><span>Map requires location access</span></div>';
+            mapEl.innerHTML = '<div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted small p-4 text-center"><i class="bi bi-map-fill fs-2 mb-2" style="color: var(--border-color, #D9E1EA);"></i><span data-i18n="hosp_map_requires">Location coordinates required to display map</span></div>';
+            if (window.LanguageManager && window.LanguageManager.applyTranslations) window.LanguageManager.applyTranslations();
             return;
         }
 
-        map = new google.maps.Map(document.getElementById('hospital-map'), {
+        if (typeof google === 'undefined' || !google.maps) {
+            mapEl.innerHTML = '<div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted small p-4 text-center"><i class="bi bi-map-fill fs-2 mb-2" style="color: var(--primary, #1769AA);"></i><span data-i18n="hosp_map_interactive">Interactive map view</span></div>';
+            if (window.LanguageManager && window.LanguageManager.applyTranslations) window.LanguageManager.applyTranslations();
+            return;
+        }
+
+        map = new google.maps.Map(mapEl, {
             center: centerCoords,
             zoom: 12,
             mapTypeControl: false,
@@ -189,10 +214,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         // Add user marker
+        const userLocTitle = getText('hosp_your_location', 'Your Location');
         new google.maps.Marker({
             position: centerCoords,
             map: map,
-            title: 'Your Location',
+            title: userLocTitle,
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 8,
@@ -209,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Add hospital markers
         const infowindow = new google.maps.InfoWindow();
 
-        hospitals.forEach(h => {
+        currentHospitals.forEach(h => {
             const pos = {lat: h.lat, lng: h.lng};
             const marker = new google.maps.Marker({
                 position: pos,
@@ -226,7 +252,9 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             
             marker.addListener('click', () => {
-                infowindow.setContent(`<div style="padding: 5px;"><strong>${h.name}</strong><br/>${h.distance_km} km away<br/><a href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}" target="_blank" style="color:#1769AA;text-decoration:none;font-size:0.85rem;margin-top:5px;display:inline-block;">Get Directions &rarr;</a></div>`);
+                const kmAwayText = getText('hosp_km_away', 'km away');
+                const getDirectionsText = getText('hosp_get_directions', 'Get Directions');
+                infowindow.setContent(`<div style="padding: 5px;"><strong>${h.name}</strong><br/>${h.distance_km} ${kmAwayText}<br/><a href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}" target="_blank" style="color:#1769AA;text-decoration:none;font-size:0.85rem;margin-top:5px;display:inline-block;">${getDirectionsText} &rarr;</a></div>`);
                 infowindow.open(map, marker);
             });
             
@@ -234,9 +262,8 @@ document.addEventListener("DOMContentLoaded", function() {
             bounds.extend(pos);
         });
 
-        if (hospitals.length > 0) {
+        if (currentHospitals.length > 0) {
             map.fitBounds(bounds);
-            // Don't zoom in too far if hospitals are very close
             const listener = google.maps.event.addListener(map, "idle", function() { 
                 if (map.getZoom() > 14) map.setZoom(14); 
                 google.maps.event.removeListener(listener); 
@@ -244,75 +271,131 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    initMap(userCoords);
+    initMap(userCoords, hospitals);
 
-    function requestLocation() {
-        document.getElementById('hospital-loading-state').classList.remove('d-none');
-        
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    // Create an invisible form to submit the POST request
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ url_for("hospitals.search_api") }}';
-                    form.style.display = 'none';
-                    
-                    // Add inputs
-                    const payload = { lat: lat, lng: lng };
-                    
-                    fetch('{{ url_for("hospitals.search_api") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Reload page with new data by setting session or redirecting via GET is tricky since API returns JSON.
-                            // Better approach: Just set a hidden form and POST to the index, or let index handle POST.
-                            // But index only handles location query. Let's redirect with lat/lng in URL? No, use the API response.
-                            window.location.reload(); // Quick fix: In a real app we'd dynamically render the DOM. For this assignment, we will update hospitals.py to handle GET/POST with lat/lng directly if needed, but since we are modifying it, let's just use the API and render dynamically.
-                        }
-                    });
-                },
-                function(error) {
-                    document.getElementById('hospital-loading-state').classList.add('d-none');
-                    alert("Location access denied or unavailable. Using registered address fallback.");
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        } else {
-            document.getElementById('hospital-loading-state').classList.add('d-none');
-            alert("Geolocation is not supported by this browser.");
+    function renderHospitalsUI(coords, hospitalsData, searchLocation) {
+        userCoords = coords;
+        hospitals = hospitalsData;
+
+        initMap(coords, hospitalsData);
+
+        if (searchLocation) {
+            const input = document.getElementById('hospital-location-input');
+            if (input) input.value = searchLocation;
+        }
+
+        const container = document.getElementById('hospitals-list-container');
+        if (!container) return;
+
+        if (!hospitalsData || hospitalsData.length === 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-geo-alt fs-1 text-warning mb-3 d-block"></i>
+                    <h5 class="fw-bold" data-i18n="gen_no_hospitals_found_n_3c6d" style="color: var(--text-main, #172033);">No hospitals found nearby</h5>
+                    <p class="small mb-3 mx-auto" data-i18n="gen_we_could_not_locate__b4db" style="color: var(--text-secondary, #536174); max-width: 400px;">We could not locate nearby medical facilities near your current location. Please try searching a different address.</p>
+                    <button class="btn btn-sm btn-outline-primary px-4 py-2" data-i18n="gen_enable_location_acce_b5bb" id="btn-empty-state-location" style="border-color: var(--border-color, #D9E1EA);">
+                        <i class="bi bi-crosshair me-1"></i> Enable Location Access
+                    </button>
+                </div>`;
+            const btnEmptyState = document.getElementById('btn-empty-state-location');
+            if (btnEmptyState) btnEmptyState.addEventListener('click', handleLocationClick);
+            if (window.LanguageManager && window.LanguageManager.applyTranslations) {
+                window.LanguageManager.applyTranslations();
+            }
+            return;
+        }
+
+        let html = '';
+        hospitalsData.forEach(h => {
+            html += `
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-3 hospital-card" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between gap-3">
+                        <div class="d-flex gap-3">
+                            <div class="d-flex align-items-center justify-content-center rounded" style="width: 48px; height: 48px; background: #E8F5E9; color: #2E7D5B;">
+                                <i class="bi bi-hospital fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color: var(--text-main, #172033); font-size: 1.1rem;">${h.name}</h6>
+                                <p class="small mb-2" style="color: var(--text-secondary, #536174);"><i class="bi bi-geo-alt me-1 text-danger"></i>${h.address}</p>
+                                <div class="d-flex flex-wrap gap-2 mb-2" style="font-size:0.75rem;">
+                                    ${h.phone ? `<span class="badge" style="background: var(--bg-surface-elevated, #F1F5F9); color: var(--text-secondary, #536174); border: 1px solid var(--border-color, #D9E1EA);"><i class="bi bi-telephone me-1"></i>${h.phone}</span>` : ''}
+                                    ${h.opening_hours ? `<span class="badge" style="background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2;"><i class="bi bi-clock me-1"></i>${h.opening_hours}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column align-items-sm-end justify-content-between gap-2">
+                            <span class="badge px-3 py-1 fw-semibold" style="font-size: 0.8rem; background: #E0F2F1; color: #00695C; border: 1px solid #B2DFDB;">
+                                <i class="bi bi-signpost-split me-1"></i>${h.distance_km} <span data-i18n="hosp_km_away">km away</span>
+                            </span>
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-sm btn-outline-secondary" data-i18n="hosp_directions" href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}" style="border-color: var(--border-color, #D9E1EA);" target="_blank">
+                                    <i class="bi bi-sign-turn-right me-1"></i> Directions
+                                </a>
+                                <a class="btn btn-sm text-white fw-medium" data-i18n="gen_book_doctor_2224" href="/appointments/book?hospital_id=${h.db_id}" style="background-color: var(--primary, #1769AA);">
+                                    <i class="bi bi-calendar-plus me-1"></i> Book Doctor
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+
+        if (window.LanguageManager && window.LanguageManager.applyTranslations) {
+            window.LanguageManager.applyTranslations();
         }
     }
 
-    // Modern approach: Post to an endpoint that sets the session coords, then reload
     function handleLocationClick() {
-        document.getElementById('hospital-loading-state').classList.remove('d-none');
+        const loadingOverlay = document.getElementById('hospital-loading-state');
+        if (loadingOverlay) loadingOverlay.classList.remove('d-none');
         
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    // Go to hospitals page with coords in query string
-                    window.location.href = `{{ url_for('hospitals.index') }}?lat=${lat}&lng=${lng}`;
-                },
-                function(error) {
-                    document.getElementById('hospital-loading-state').classList.add('d-none');
-                    alert("Location access denied. Please enable location or use the address search.");
-                }
-            );
-        } else {
-            document.getElementById('hospital-loading-state').classList.add('d-none');
-            alert("Geolocation is not supported by this browser.");
+        if (!navigator.geolocation) {
+            if (loadingOverlay) loadingOverlay.classList.add('d-none');
+            alert(getText("hosp_err_geo_unsupported", "Geolocation is not supported by this browser."));
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                fetch("{{ url_for('hospitals.search_api') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: lat, lng: lng, mode: 'current' })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                    if (data.error) {
+                        alert(getText("hosp_err_no_loc_address", data.error));
+                    } else {
+                        renderHospitalsUI(data.user_coords, data.hospitals, data.search_location);
+                    }
+                })
+                .catch(err => {
+                    if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                    window.location.href = `{{ url_for('hospitals.index') }}?lat=${lat}&lng=${lng}&mode=current`;
+                });
+            },
+            function(error) {
+                if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                let message = getText("hosp_err_unable_access", "Unable to access your current location.");
+                if (error.code === error.PERMISSION_DENIED) {
+                    message = getText("hosp_err_loc_denied", "Location access was denied. Please allow location permissions in your browser settings or search by address.");
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    message = getText("hosp_err_loc_unavailable", "Location information is unavailable. Please check your device location settings or enter an address manually.");
+                } else if (error.code === error.TIMEOUT) {
+                    message = getText("hosp_err_loc_timeout", "Location request timed out. Please try again or search by address.");
+                }
+                alert(message);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     }
 
     const btnUseCurrent = document.getElementById('btn-use-current-location');
@@ -321,9 +404,44 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnEmptyState = document.getElementById('btn-empty-state-location');
     if (btnEmptyState) btnEmptyState.addEventListener('click', handleLocationClick);
 
-    document.getElementById('hospital-search-form').addEventListener('submit', function() {
-        document.getElementById('hospital-loading-state').classList.remove('d-none');
+    const searchForm = document.getElementById('hospital-search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('hospital-location-input')?.value?.trim();
+            if (!inputVal) return;
+
+            const loadingOverlay = document.getElementById('hospital-loading-state');
+            if (loadingOverlay) loadingOverlay.classList.remove('d-none');
+
+            fetch("{{ url_for('hospitals.search_api') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ location: inputVal, mode: 'manual' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                if (data.error) {
+                    alert(getText("hosp_err_no_loc_address", data.error));
+                } else {
+                    renderHospitalsUI(data.user_coords, data.hospitals, data.search_location);
+                }
+            })
+            .catch(err => {
+                if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                searchForm.submit();
+            });
+        });
+    }
+
+    window.addEventListener("languageChanged", function() {
+        if (window.LanguageManager && window.LanguageManager.applyTranslations) {
+            window.LanguageManager.applyTranslations();
+        }
     });
 });
 </script>
 {% endblock %}
+
+

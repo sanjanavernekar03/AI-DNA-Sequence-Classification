@@ -51,7 +51,7 @@
 <div class="d-flex flex-column h-100 justify-content-between">
 <div>
 <div class="d-flex align-items-center gap-3 mb-3">
-<img alt="{{ doc.full_name }}" class="rounded-circle doctor-avatar shadow-sm" src="{{ doc.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
+<img alt="{{ doc.full_name }}" class="rounded-circle doctor-avatar shadow-sm" loading="lazy" src="{{ doc.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
 <div>
 <h6 class="fw-bold mb-0" style="color: var(--text-main, #172033);">{{ doc.full_name }}</h6>
 <span class="badge mt-1 fw-semibold" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ doc.specialty }}</span>
@@ -105,7 +105,7 @@
 <div class="col-lg-8">
 <div class="card border-0 shadow-sm p-4 p-md-5" style="background: var(--bg-card, #FFFFFF); border-radius: 12px;">
 <div class="p-3 rounded-3 mb-4 d-flex align-items-center gap-3" style="background: var(--bg-surface-elevated, #F1F5F9); border: 1px solid var(--border-color, #D9E1EA);">
-<img alt="{{ doctor.full_name }}" class="rounded-circle doctor-avatar shadow-sm" src="{{ doctor.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
+<img alt="{{ doctor.full_name }}" class="rounded-circle doctor-avatar shadow-sm" loading="lazy" src="{{ doctor.photo_url or 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&amp;fit=crop&amp;w=300&amp;q=80' }}"/>
 <div>
 <h6 class="fw-bold mb-0" style="color: var(--text-main, #172033);">{{ doctor.full_name }} <span class="badge ms-2" style="background: #E3F2FD; color: #1769AA; border: 1px solid #BBDEFB;">{{ doctor.specialty }}</span></h6>
 <small style="color: var(--text-secondary, #536174);"><i class="bi bi-hospital me-1"></i>{{ hospital.name }}</small>

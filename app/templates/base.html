@@ -43,6 +43,7 @@
         .app-layout {
             display: flex;
             min-height: 100vh;
+            position: relative;
         }
         
         /* Modern Sidebar */
@@ -58,20 +59,33 @@
             left: 0;
             z-index: 1040;
             overflow-y: auto;
-            transition: all 0.3s ease;
+            overflow-x: hidden;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .sidebar-brand {
-            padding: 1.5rem;
+        .sidebar-header {
+            padding: 1.25rem 1.25rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
+            justify-content: space-between;
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             background: var(--bg-card);
             z-index: 2;
+            transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            background: transparent;
+            padding: 0;
+            border: none;
+            flex: 1;
+            min-width: 0;
         }
         
         .sidebar-brand-icon {
@@ -80,13 +94,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         
         .sidebar-brand-text {
             font-weight: 700;
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             color: var(--text-main);
             letter-spacing: -0.5px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .sidebar-brand-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
+            overflow: hidden;
         }
         
         .sidebar-nav {
@@ -94,24 +119,31 @@
         }
         
         .sidebar-section {
-            padding: 1.25rem 1.5rem 0.5rem;
-            font-size: 0.75rem;
+            padding: 1rem 1.25rem 0.4rem;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             color: #94A3B8;
+            transition: opacity 0.2s ease;
+            line-height: 1.3;
+            word-wrap: break-word;
         }
         
         .sidebar-item {
             display: flex;
             align-items: center;
-            padding: 0.7rem 1.5rem;
+            padding: 0.6rem 1.25rem;
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             font-weight: 500;
             transition: all 0.2s ease;
             gap: 0.75rem;
+            white-space: normal;
+            line-height: 1.25;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .sidebar-item i {
@@ -119,6 +151,7 @@
             width: 24px;
             text-align: center;
             transition: color 0.2s ease;
+            flex-shrink: 0;
         }
         
         .sidebar-item:hover {
@@ -146,19 +179,120 @@
             flex-direction: column;
             min-height: 100vh;
             width: calc(100% - 280px);
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Desktop Collapsed Sidebar State */
+        @media (min-width: 992px) {
+            html.sidebar-collapsed .app-sidebar,
+            body.sidebar-collapsed .app-sidebar {
+                width: 76px !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-header,
+            body.sidebar-collapsed .app-sidebar .sidebar-header {
+                padding: 1rem 0.5rem !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 0.75rem !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-brand-details,
+            body.sidebar-collapsed .app-sidebar .sidebar-brand-details {
+                display: none !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-section,
+            body.sidebar-collapsed .app-sidebar .sidebar-section {
+                opacity: 0 !important;
+                height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: hidden !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-item,
+            body.sidebar-collapsed .app-sidebar .sidebar-item {
+                justify-content: center !important;
+                padding: 0.75rem 0 !important;
+                gap: 0 !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-item > *:not(i),
+            body.sidebar-collapsed .app-sidebar .sidebar-item > *:not(i) {
+                display: none !important;
+            }
+
+            html.sidebar-collapsed .app-sidebar .sidebar-item i,
+            body.sidebar-collapsed .app-sidebar .sidebar-item i {
+                font-size: 1.3rem !important;
+                margin: 0 !important;
+                width: auto !important;
+            }
+
+            html.sidebar-collapsed .app-content,
+            body.sidebar-collapsed .app-content {
+                margin-left: 76px !important;
+                width: calc(100% - 76px) !important;
+            }
         }
         
         /* Top Header */
         .top-header {
             background: transparent;
             border-bottom: none;
-            padding: 1.5rem 2rem 0.5rem;
+            padding: 1.25rem 2rem 0.5rem;
             display: flex;
             justify-content: flex-end;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1030;
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 36px !important;
+            height: 36px !important;
+            padding: 0 !important;
+            border-radius: 8px !important;
+            background: var(--bg-card) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-color) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: var(--primary-light) !important;
+            color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        /* Mobile Backdrop Overlay */
+        .sidebar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 1035;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .sidebar-backdrop.show {
+            opacity: 1;
+            visibility: visible;
         }
         
         .header-actions {
@@ -183,28 +317,23 @@
         @media (max-width: 991.98px) {
             .app-sidebar {
                 transform: translateX(-100%);
+                width: 280px !important;
             }
             .app-sidebar.show {
-                transform: translateX(0);
+                transform: translateX(0) !important;
             }
             .app-content {
-                margin-left: 0;
-                width: 100%;
+                margin-left: 0 !important;
+                width: 100% !important;
             }
-            .mobile-nav-toggle {
-                display: block !important;
-            }
-            .top-header {
-            background: transparent;
-            border-bottom: none;
-            padding: 1.5rem 2rem 0.5rem;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1030;
         }
+        
+        /* Disable transition during initial page load */
+        html.no-sidebar-transition .app-sidebar,
+        html.no-sidebar-transition .app-content,
+        body.no-sidebar-transition .app-sidebar,
+        body.no-sidebar-transition .app-content {
+            transition: none !important;
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -234,7 +363,7 @@
 <i class="bi bi-sun-fill theme-icon-light"></i>
 <span class="theme-label small fw-medium ms-1" data-i18n="theme_light">Light</span>
 </button>
-<select class="form-select form-select-sm global-lang-select py-2 px-3" style="width: auto; border-radius: 8px;">
+<select class="form-select form-select-sm global-lang-select py-2" style="width: auto; border-radius: 8px;">
 <option value="en">English</option>
 <option value="hi">हिन्दी</option>
 <option value="kn">ಕನ್ನಡ</option>
@@ -270,53 +399,55 @@
         {% if current_user.is_authenticated and request.endpoint != 'welcome' and not request.path.startswith('/auth/') %}
         
         <!-- SIDEBAR -->
-<aside class="app-sidebar" id="sidebar">
-<a class="sidebar-brand" href="{{ url_for('dashboard.index') }}">
-<div class="sidebar-brand-icon">
-<i class="bi bi-hexagon-half"></i>
-</div>
-<div class="d-flex flex-column align-items-start">
-<div class="sidebar-brand-text" data-i18n="auto_e812a2" style="line-height: 1;">DNAura</div>
-<div data-i18n="auto_2ee346" style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 4px; letter-spacing: 0.5px; font-weight: 700; text-transform: uppercase;">Your DNA Your Insight</div>
-</div>
-</a>
-<div class="sidebar-nav pb-4">
-<a class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">
-<i class="bi bi-house-door"></i> <span data-i18n="gen_home_8cf0">Dashboard</span>
-</a>
-<a class="sidebar-item {% if 'complete' in request.path %}active{% endif %}" href="{{ url_for('complete_analysis.index') }}">
-<i class="bi bi-lightning-charge"></i> <span data-i18n="gen_genetic_analysis_ce47">Complete DNA Analysis</span>
-</a>
-<div class="sidebar-section" data-i18n="auto_90f8e4">HEALTH &amp; SERVICES</div>
-<a class="sidebar-item {% if 'hospitals' in request.path and not 'appointments' in request.path %}active{% endif %}" href="{{ url_for('hospitals.index') }}">
-<i class="bi bi-hospital"></i> <span data-i18n="gen_hospitals_doctors_3561">Hospital Recommendations</span>
-</a>
-<a class="sidebar-item {% if 'health-guidance' in request.path %}active{% endif %}" href="{{ url_for('health_guidance.index') }}">
-<i class="bi bi-apple"></i> <span data-i18n="gen_diet_planner_fde2">Health Guide</span>
-</a>
-<a class="sidebar-item {% if 'doctors' in request.path %}active{% endif %}" href="{{ url_for('hospitals.index') }}">
-<i class="bi bi-calendar-plus"></i> <span data-i18n="gen_doctor_appointment">Doctor Appointments</span>
-</a>
-<a class="sidebar-item {% if 'appointments' in request.path %}active{% endif %}" href="{{ url_for('appointments.my_appointments') }}">
-<i class="bi bi-calendar-check"></i> <span data-i18n="nav_appointments">My Appointments</span>
-</a>
-<div class="sidebar-section" data-i18n="auto_c40eb6">ACCOUNT</div>
-<a class="sidebar-item {% if request.endpoint == 'auth.profile' %}active{% endif %}" href="{{ url_for('auth.profile') }}">
-<i class="bi bi-gear"></i> <span data-i18n="nav_settings">Settings</span>
-</a>
-<a class="sidebar-item text-danger" href="{{ url_for('auth.logout') }}">
-<i class="bi bi-box-arrow-right"></i> <span data-i18n="nav_logout">Logout</span>
-</a>
-</div>
-</aside>
-<!-- PAGE CONTENT -->
-<main class="app-content">
-<!-- TOP HEADER -->
-<header class="top-header">
-<button class="btn btn-light d-lg-none mobile-nav-toggle me-auto" onclick="document.getElementById('sidebar').classList.toggle('show')" style="display: none;">
-<i class="bi bi-list fs-4"></i>
-</button>
-<div class="header-actions">
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}">
+                    <div class="sidebar-brand-icon">
+                        <i class="bi bi-hexagon-half"></i>
+                    </div>
+                    <div class="sidebar-brand-details">
+                        <div class="sidebar-brand-text" data-i18n="auto_e812a2" style="line-height: 1.2;">DNAura</div>
+                        <div data-i18n="auto_2ee346" style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 4px; letter-spacing: 0.5px; font-weight: 700; text-transform: uppercase;">Your DNA Your Insight</div>
+                    </div>
+                </a>
+                <button aria-label="Close sidebar" class="btn sidebar-toggle-btn" title="Close Sidebar" type="button">
+                    <i class="bi bi-layout-sidebar fs-5"></i>
+                </button>
+            </div>
+            <div class="sidebar-nav pb-4">
+                <a class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}" title="Dashboard">
+                    <i class="bi bi-house-door"></i> <span data-i18n="gen_home_8cf0">Dashboard</span>
+                </a>
+                <a class="sidebar-item {% if 'complete' in request.path %}active{% endif %}" href="{{ url_for('complete_analysis.index') }}" title="Complete DNA Analysis">
+                    <i class="bi bi-lightning-charge"></i> <span data-i18n="gen_genetic_analysis_ce47">Complete DNA Analysis</span>
+                </a>
+                <div class="sidebar-section" data-i18n="auto_90f8e4">HEALTH &amp; SERVICES</div>
+                <a class="sidebar-item {% if 'hospitals' in request.path and not 'appointments' in request.path %}active{% endif %}" href="{{ url_for('hospitals.index') }}" title="Hospital Recommendations">
+                    <i class="bi bi-hospital"></i> <span data-i18n="gen_hospitals_doctors_3561">Hospital Recommendations</span>
+                </a>
+                <a class="sidebar-item {% if 'health-guidance' in request.path %}active{% endif %}" href="{{ url_for('health_guidance.index') }}" title="Health Guide">
+                    <i class="bi bi-apple"></i> <span data-i18n="gen_diet_planner_fde2">Health Guide</span>
+                </a>
+                <a class="sidebar-item {% if 'doctors' in request.path %}active{% endif %}" href="{{ url_for('hospitals.index') }}" title="Doctor Appointments">
+                    <i class="bi bi-calendar-plus"></i> <span data-i18n="gen_doctor_appointment">Doctor Appointments</span>
+                </a>
+                <a class="sidebar-item {% if 'appointments' in request.path %}active{% endif %}" href="{{ url_for('appointments.my_appointments') }}" title="My Appointments">
+                    <i class="bi bi-calendar-check"></i> <span data-i18n="nav_appointments">My Appointments</span>
+                </a>
+                <div class="sidebar-section" data-i18n="auto_c40eb6">ACCOUNT</div>
+                <a class="sidebar-item {% if request.endpoint == 'auth.profile' %}active{% endif %}" href="{{ url_for('auth.profile') }}" title="Settings">
+                    <i class="bi bi-gear"></i> <span data-i18n="nav_settings">Settings</span>
+                </a>
+                <a class="sidebar-item text-danger" href="{{ url_for('auth.logout') }}" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i> <span data-i18n="nav_logout">Logout</span>
+                </a>
+            </div>
+        </aside>
+        <!-- PAGE CONTENT -->
+        <main class="app-content">
+            <!-- TOP HEADER -->
+            <header class="top-header">
+                <div class="header-actions">
 <button aria-label="Toggle dark and light theme" class="btn btn-sm btn-outline-secondary theme-toggle-btn d-inline-flex align-items-center gap-1 py-1.5 px-3 me-1" title="Toggle Theme" type="button">
 <i class="bi bi-moon-stars-fill theme-icon-dark" style="display: none;"></i>
 <i class="bi bi-sun-fill theme-icon-light"></i>
