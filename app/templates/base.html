@@ -448,6 +448,10 @@
             <!-- TOP HEADER -->
             <header class="top-header">
                 <div class="header-actions">
+<button id="header-voice-btn" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1.5 py-1.5 px-3 me-1" title="Voice Assistant (Click to speak)" type="button" style="border-radius: 8px; font-size: 0.85rem;" onclick="if(window.VoiceAssistant) window.VoiceAssistant.triggerVoiceCommand();">
+<i class="bi bi-mic-fill" id="header-voice-icon"></i>
+<span id="header-voice-label" class="small fw-medium">Voice Assistant</span>
+</button>
 <button aria-label="Toggle dark and light theme" class="btn btn-sm btn-outline-secondary theme-toggle-btn d-inline-flex align-items-center gap-1 py-1.5 px-3 me-1" title="Toggle Theme" type="button">
 <i class="bi bi-moon-stars-fill theme-icon-dark" style="display: none;"></i>
 <i class="bi bi-sun-fill theme-icon-light"></i>

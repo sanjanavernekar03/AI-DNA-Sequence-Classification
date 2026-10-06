@@ -19,26 +19,68 @@ DOCTOR_SPECIALTIES = [
 def save_or_get_hospitals_batch(hospitals_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Optimized batch lookup/insertion for hospitals and doctor seeding using a single DB connection.
+    Deduplicates hospitals by external_place_id, name+coords, or name+address.
     """
     if not hospitals_list:
         return hospitals_list
 
-    ext_ids = [h.get('external_place_id') for h in hospitals_list if h.get('external_place_id')]
-    existing_map = {}
-
     with get_db() as conn:
         cursor = conn.cursor(dictionary=True)
-        if ext_ids:
-            format_strings = ','.join(['%s'] * len(ext_ids))
-            cursor.execute(f"SELECT id, external_place_id FROM hospitals WHERE external_place_id IN ({format_strings})", tuple(ext_ids))
-            rows = cursor.fetchall()
-            for r in rows:
-                existing_map[r['external_place_id']] = r['id']
+        
+        # Load existing hospitals map by place_id, name+coords, and name+address
+        cursor.execute("SELECT id, external_place_id, name, address, city, latitude as lat, longitude as lng FROM hospitals")
+        existing_rows = cursor.fetchall()
+        
+        place_map = {}
+        coord_map = {}
+        name_addr_map = {}
+        
+        for r in existing_rows:
+            h_id = r['id']
+            if r.get('external_place_id'):
+                place_map[r['external_place_id']] = r
+            if r.get('name') and r.get('lat') is not None and r.get('lng') is not None:
+                ckey = (r['name'].strip().lower(), round(float(r['lat']), 4), round(float(r['lng']), 4))
+                coord_map[ckey] = r
+            if r.get('name') and r.get('address'):
+                nakey = (r['name'].strip().lower(), r['address'].strip().lower())
+                name_addr_map[nakey] = r
 
         for hosp_data in hospitals_list:
             ext_id = hosp_data.get('external_place_id')
-            if ext_id and ext_id in existing_map:
-                hosp_data['db_id'] = existing_map[ext_id]
+            h_name = hosp_data.get('name', 'Hospital').strip()
+            h_lat = hosp_data.get('lat')
+            h_lng = hosp_data.get('lng')
+            h_addr = (hosp_data.get('address') or '').strip()
+
+            matched_existing = None
+            if ext_id and ext_id in place_map:
+                matched_existing = place_map[ext_id]
+            elif h_lat is not None and h_lng is not None and (h_name.lower(), round(float(h_lat), 4), round(float(h_lng), 4)) in coord_map:
+                matched_existing = coord_map[(h_name.lower(), round(float(h_lat), 4), round(float(h_lng), 4))]
+            elif h_addr and (h_name.lower(), h_addr.lower()) in name_addr_map:
+                matched_existing = name_addr_map[(h_name.lower(), h_addr.lower())]
+
+            if matched_existing:
+                h_id = matched_existing['id']
+                hosp_data['db_id'] = h_id
+                # Update city if existing record lacked city or if new city is provided and valid
+                if hosp_data.get('city') and not matched_existing.get('city'):
+                    upd_cursor = conn.cursor()
+                    upd_cursor.execute("UPDATE hospitals SET city = %s WHERE id = %s", (hosp_data['city'], h_id))
+                    upd_cursor.close()
+                if ext_id and not matched_existing.get('external_place_id'):
+                    upd_cursor = conn.cursor()
+                    upd_cursor.execute("UPDATE hospitals SET external_place_id = %s WHERE id = %s", (ext_id, h_id))
+                    upd_cursor.close()
+                
+                # Check if doctors exist for this hospital
+                doc_check = conn.cursor(dictionary=True)
+                doc_check.execute("SELECT COUNT(*) as dcnt FROM doctors WHERE hospital_id = %s", (h_id,))
+                cnt_row = doc_check.fetchone()
+                doc_check.close()
+                if not cnt_row or cnt_row['dcnt'] == 0:
+                    _seed_doctors_with_cursor(cursor, h_id)
                 continue
 
             query = """
@@ -47,21 +89,28 @@ def save_or_get_hospitals_batch(hospitals_list: List[Dict[str, Any]]) -> List[Di
             """
             cursor.execute(query, (
                 ext_id,
-                hosp_data.get('name', 'Hospital'),
-                hosp_data.get('address', ''),
+                h_name,
+                h_addr,
                 hosp_data.get('city', ''),
                 hosp_data.get('state', ''),
                 hosp_data.get('country', ''),
                 hosp_data.get('postal_code', ''),
-                hosp_data.get('lat'),
-                hosp_data.get('lng'),
+                h_lat,
+                h_lng,
                 hosp_data.get('phone'),
                 hosp_data.get('opening_hours')
             ))
             hosp_id = cursor.lastrowid
             hosp_data['db_id'] = hosp_id
+            
+            # Update local lookup maps
+            new_rec = {'id': hosp_id, 'external_place_id': ext_id, 'name': h_name, 'address': h_addr, 'city': hosp_data.get('city', ''), 'lat': h_lat, 'lng': h_lng}
             if ext_id:
-                existing_map[ext_id] = hosp_id
+                place_map[ext_id] = new_rec
+            if h_lat is not None and h_lng is not None:
+                coord_map[(h_name.lower(), round(float(h_lat), 4), round(float(h_lng), 4))] = new_rec
+            if h_addr:
+                name_addr_map[(h_name.lower(), h_addr.lower())] = new_rec
 
             _seed_doctors_with_cursor(cursor, hosp_id)
         

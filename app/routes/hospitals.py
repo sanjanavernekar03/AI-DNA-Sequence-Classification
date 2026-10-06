@@ -87,10 +87,14 @@ def index():
             flash("Hospital lookup service is currently busy. Please try again or search a nearby city.", "info")
 
     for h_data in nearby_hospitals_data:
-        h_data['city'] = user.get('city', '')
-        h_data['state'] = user.get('state', '')
-        h_data['country'] = user.get('country', '')
-        h_data['postal_code'] = user.get('postal_code', '')
+        if not h_data.get('city'):
+            h_data['city'] = manual_location.split(',')[0].strip() if manual_location else (user.get('city', '') or '')
+        if not h_data.get('state'):
+            h_data['state'] = user.get('state', '')
+        if not h_data.get('country'):
+            h_data['country'] = user.get('country', '')
+        if not h_data.get('postal_code'):
+            h_data['postal_code'] = user.get('postal_code', '')
 
     hospitals_list = save_or_get_hospitals_batch(nearby_hospitals_data)
     display_search_location = search_location or registered_address or ""
@@ -150,12 +154,14 @@ def search_api():
 
     hospitals_data = search_nearby_hospitals(coords['lat'], coords['lng'])
     for hospital_data in hospitals_data:
-        hospital_data.update({
-            'city': user.get('city', ''),
-            'state': user.get('state', ''),
-            'country': user.get('country', ''),
-            'postal_code': user.get('postal_code', ''),
-        })
+        if not hospital_data.get('city'):
+            hospital_data['city'] = location.split(',')[0].strip() if location else (user.get('city', '') or '')
+        if not hospital_data.get('state'):
+            hospital_data['state'] = user.get('state', '')
+        if not hospital_data.get('country'):
+            hospital_data['country'] = user.get('country', '')
+        if not hospital_data.get('postal_code'):
+            hospital_data['postal_code'] = user.get('postal_code', '')
 
     hospitals_list = save_or_get_hospitals_batch(hospitals_data)
 

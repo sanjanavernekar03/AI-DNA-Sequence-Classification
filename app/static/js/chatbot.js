@@ -17,6 +17,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let isAudioOutputEnabled = true;
     const conversationHistory = [];
+    let userCoords = null;
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            },
+            function () {},
+            { timeout: 5000 }
+        );
+    }
 
     if (!toggleBtn || !panel) return;
 
@@ -32,6 +43,15 @@ document.addEventListener("DOMContentLoaded", function () {
         panel.classList.toggle("d-none");
         if (!panel.classList.contains("d-none")) {
             input.focus();
+            if (navigator.geolocation && !userCoords) {
+                navigator.geolocation.getCurrentPosition(
+                    function (pos) {
+                        userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    },
+                    function () {},
+                    { timeout: 3000 }
+                );
+            }
         }
     });
 
@@ -130,7 +150,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 message: text,
                 current_page: currentPath,
                 language: currentLang,
-                conversation: conversationHistory.slice(-10)
+                conversation: conversationHistory.slice(-10),
+                user_location: userCoords
             })
         })
         .then(response => response.json())
@@ -144,6 +165,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 conversationHistory.push({ role: "assistant", content: data.response });
                 if (isAudioOutputEnabled && window.VoiceAssistant) {
                     window.VoiceAssistant.speak(data.response, currentLang);
+                }
+
+                // Execute controlled action if returned (e.g. Navigation or Confirmation)
+                if (data.action && data.action !== 'CHATBOT' && data.action !== 'SHOW_RECOMMENDATION' && window.VoiceAssistant) {
+                    window.VoiceAssistant.handleControlledAction(data, text, function() {});
                 }
             }
         })
@@ -165,7 +191,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             `;
         } else {
-            const formattedText = escapeHtml(text).replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            let formattedText = escapeHtml(text);
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            formattedText = formattedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, label, url) {
+                if (url.includes('/appointments/book')) {
+                    return `<a href="${url}" class="btn btn-sm btn-primary me-1 my-1 text-white text-decoration-none d-inline-flex align-items-center" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;"><i class="bi bi-calendar-plus me-1"></i>${label}</a>`;
+                }
+                if (url.includes('/hospitals/')) {
+                    return `<a href="${url}" class="btn btn-sm btn-outline-primary me-1 my-1 text-decoration-none d-inline-flex align-items-center" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;"><i class="bi bi-hospital me-1"></i>${label}</a>`;
+                }
+                if (url.includes('google.com/maps') || url.includes('maps.google')) {
+                    return `<a href="${url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger me-1 my-1 text-decoration-none d-inline-flex align-items-center" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px;"><i class="bi bi-geo-alt-fill me-1"></i>${label}</a>`;
+                }
+                return `<a href="${url}" class="text-primary text-decoration-underline" target="_blank">${label}</a>`;
+            });
+            formattedText = formattedText.replace(/\n/g, "<br>");
+
             html = `
                 <div class="msg-bubble assistant-bubble shadow-sm">
                     <div class="fw-semibold text-emerald mb-1 small"><i class="bi bi-robot me-1"></i>DNAura Assistant</div>
@@ -182,6 +223,29 @@ document.addEventListener("DOMContentLoaded", function () {
         msgDiv.innerHTML = html;
         conversation.appendChild(msgDiv);
         conversation.scrollTop = conversation.scrollHeight;
+    }
+
+    // Expose ChatbotUI globally for Voice Assistant integration
+    window.ChatbotUI = {
+        appendMessage: appendMessage,
+        sendMessage: sendMessage
+    };
+
+    // Voice Input Microphone Button Handler
+    if (voiceInputBtn) {
+        voiceInputBtn.addEventListener("click", function () {
+            if (window.VoiceAssistant) {
+                window.VoiceAssistant.triggerVoiceCommand(function(state, label) {
+                    if (state === 'listening') {
+                        voiceInputBtn.classList.remove("btn-outline-secondary", "btn-outline-emerald");
+                        voiceInputBtn.classList.add("btn-danger");
+                    } else if (state === 'idle' || state === 'success' || state === 'error') {
+                        voiceInputBtn.classList.remove("btn-danger");
+                        voiceInputBtn.classList.add("btn-outline-secondary");
+                    }
+                });
+            }
+        });
     }
 
     function appendTypingIndicator() {
@@ -214,3 +278,4 @@ document.addEventListener("DOMContentLoaded", function () {
              .replace(/'/g, "&#039;");
     }
 });
+

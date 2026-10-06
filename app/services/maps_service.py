@@ -174,12 +174,10 @@ def search_nearby_hospitals(lat: float, lng: float, radius_km: float = 50.0) -> 
                 _NEARBY_HOSPITALS_CACHE[key] = (now, google_results)
             return google_results
 
-    # Fast Path 2: Check if DB already has hospitals near these coordinates
+    # Fast Path 2: Check if DB already has hospitals near these coordinates within radius_km
     try:
         from app.services.hospital_service import get_hospitals_from_db_near
         db_hospitals = get_hospitals_from_db_near(lat, lng, radius_km=radius_km)
-        if not db_hospitals:
-            db_hospitals = get_hospitals_from_db_near(lat, lng, radius_km=1000.0)
 
         if db_hospitals and len(db_hospitals) >= 1:
             with _CACHE_LOCK:
@@ -188,13 +186,14 @@ def search_nearby_hospitals(lat: float, lng: float, radius_km: float = 50.0) -> 
     except Exception as exc:
         logger.warning("DB nearby hospital lookup skipped: %s", exc)
 
-    # Path 3: Single optimized Overpass API query (50km radius, 2s max timeout)
+    # Path 3: Single optimized Overpass API query (radius_km, 2s max timeout)
     hospitals: List[Dict[str, Any]] = []
     try:
+        radius_m = int(radius_km * 1000)
         query = f"""
         [out:json][timeout:2];
-        (node["amenity"="hospital"](around:50000,{lat},{lng});
-         way["amenity"="hospital"](around:50000,{lat},{lng}););
+        (node["amenity"="hospital"](around:{radius_m},{lat},{lng});
+         way["amenity"="hospital"](around:{radius_m},{lat},{lng}););
         out center 50;
         """
         request = urllib.request.Request(
@@ -227,11 +226,11 @@ def search_nearby_hospitals(lat: float, lng: float, radius_km: float = 50.0) -> 
     except Exception as exc:
         logger.warning("Overpass hospital search failed: %s", type(exc).__name__)
 
-    # Fallback to any DB hospitals if Overpass had no results or timed out
+    # Fallback to DB hospitals strictly within radius_km if Overpass had no results or timed out
     if not hospitals:
         try:
             from app.services.hospital_service import get_hospitals_from_db_near
-            hospitals = get_hospitals_from_db_near(lat, lng, radius_km=500.0)
+            hospitals = get_hospitals_from_db_near(lat, lng, radius_km=radius_km)
         except Exception:
             pass
 
@@ -243,11 +242,11 @@ def search_nearby_hospitals(lat: float, lng: float, radius_km: float = 50.0) -> 
 
 
 
-def _search_google_places(lat: float, lng: float, api_key: str) -> List[Dict[str, Any]]:
+def _search_google_places(lat: float, lng: float, api_key: str, radius_km: float = 50.0) -> List[Dict[str, Any]]:
     try:
         params = urllib.parse.urlencode({
             "location": f"{lat},{lng}",
-            "radius": 50000,
+            "radius": int(radius_km * 1000),
             "type": "hospital",
             "key": api_key,
         })

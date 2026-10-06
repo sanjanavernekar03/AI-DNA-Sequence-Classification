@@ -200,7 +200,6 @@ def login():
                 return render_template('auth/login.html', identifier=identifier)
 
             if user:
-                print(f"DEBUG: password='{password}', hash='{user['password_hash']}'")
                 is_valid = check_password_hash(user['password_hash'], password) or check_password_hash(user['password_hash'], password.strip())
                 print(f"DEBUG LOGIN: user={user['username']}, is_valid={is_valid}")
 

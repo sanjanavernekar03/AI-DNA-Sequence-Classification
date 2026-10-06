@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}DNA Analysis History — DNAura{% endblock %}
+
+{% block content %}
+<span id="page-i18n-title" data-i18n="hist_page_title" style="display:none;"></span>
+<div class="container-fluid px-0">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="font-size: 1.5rem; color: var(--text-main, #0F172A);" data-i18n="hist_title">DNA Analysis History</h2>
+            <p class="small mb-0" style="color: var(--text-secondary, #475569);" data-i18n="hist_desc">View and track all your past DNA sequence analysis, classification, mutation, and disease prediction records.</p>
+        </div>
+        <a href="{{ url_for('complete_analysis.index') }}" class="btn btn-primary-gradient">
+            <i class="bi bi-lightning-charge me-1"></i> <span data-i18n="comp_run_title">New Complete Analysis</span>
+        </a>
+    </div>
+
+    <!-- FILTERS & SEARCH BAR -->
+    <div class="card-glass p-3 mb-4">
+        <form method="GET" action="{{ url_for('history.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-4 col-lg-3">
+                <select name="type" class="form-select form-select-sm" onchange="this.form.submit();">
+                    <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All Analysis Modules</option>
+                    <option value="complete" {% if filter_type == 'complete' %}selected{% endif %}>Complete DNA Analysis</option>
+                    <option value="sequence" {% if filter_type == 'sequence' %}selected{% endif %}>Sequence Processing</option>
+                    <option value="similarity" {% if filter_type == 'similarity' %}selected{% endif %}>Similarity & Alignment</option>
+                    <option value="mutation" {% if filter_type == 'mutation' %}selected{% endif %}>Mutation Analysis</option>
+                    <option value="classification" {% if filter_type == 'classification' %}selected{% endif %}>DNA Classification</option>
+                    <option value="disease" {% if filter_type == 'disease' %}selected{% endif %}>Disease Prediction</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-5 ms-auto">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search history by sequence name or result..." data-i18n-placeholder="hist_search_ph">
+                    <button class="btn btn-outline-custom" type="submit"><i class="bi bi-search"></i></button>
+                    {% if search_query or filter_type != 'all' %}
+                    <a href="{{ url_for('history.index') }}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- HISTORY RECORDS TABLE -->
+    <div class="card-glass p-4">
+        {% if history %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th data-i18n="hist_seq_name">Sequence Name</th>
+                        <th data-i18n="hist_module">Analysis Module</th>
+                        <th data-i18n="hist_result">Primary Result</th>
+                        <th data-i18n="hist_details">Details / Risk</th>
+                        <th data-i18n="hist_date">Date & Time</th>
+                        <th class="text-end" data-i18n="hist_actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-dna text-primary fs-5"></i>
+                                <div>
+                                    <strong class="text-dark d-block">{{ item.sequence_name }}</strong>
+                                    <span class="text-muted small font-mono">Record #{{ item.detail_id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if item.module_type == 'complete' %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25" style="font-size:0.75rem;">Complete Analysis</span>
+                            {% elif item.module_type == 'sequence' %}
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25" style="font-size:0.75rem;">Sequence Processing</span>
+                            {% elif item.module_type == 'similarity' %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size:0.75rem;">Similarity</span>
+                            {% elif item.module_type == 'mutation' %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" style="font-size:0.75rem;">Mutation</span>
+                            {% elif item.module_type == 'classification' %}
+                            <span class="badge bg-purple bg-opacity-10 text-purple border border-purple border-opacity-25" style="font-size:0.75rem;">Classification</span>
+                            {% elif item.module_type == 'disease' %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size:0.75rem;">Disease Risk</span>
+                            {% else %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-size:0.75rem;">{{ item.module_name }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-medium text-dark">
+                            {{ item.classification_result }}
+                        </td>
+                        <td class="small text-secondary">
+                            {{ item.disease_prediction }}
+                            {% if item.risk_category and item.risk_category != 'N/A' %}
+                            <span class="badge {% if item.risk_category == 'High' %}bg-danger{% elif item.risk_category == 'Moderate' %}bg-warning text-dark{% else %}bg-success{% endif %} ms-1" style="font-size:0.65rem;">
+                                {{ item.risk_category }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-secondary font-mono">
+                            {{ item.created_at|format_datetime }}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                {% if item.module_type == 'complete' %}
+                                <a href="{{ url_for('complete_analysis.result', analysis_id=item.detail_id) }}" class="btn btn-outline-custom">
+                                    <i class="bi bi-eye"></i> View Result
+                                </a>
+                                <a href="{{ url_for('reports.generate', analysis_type='complete', analysis_id=item.detail_id) }}" class="btn btn-cyan-gradient" title="Download PDF Report">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('reports.generate', analysis_type=item.module_type, analysis_id=item.detail_id) }}" class="btn btn-outline-custom">
+                                    <i class="bi bi-file-earmark-pdf"></i> Report
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-secondary">
+            <i class="bi bi-clock-history text-muted" style="font-size: 3.5rem;"></i>
+            <h5 class="text-dark fw-bold mt-3 mb-2" data-i18n="hist_empty_title">No History Records Found</h5>
+            <p class="small text-secondary mx-auto mb-4" style="max-width: 420px;" data-i18n="hist_empty_desc">
+                No analysis history matches your filter or search query. Run a Complete DNA Analysis or individual tool to record new results.
+            </p>
+            <a href="{{ url_for('complete_analysis.index') }}" class="btn btn-primary-gradient">
+                <i class="bi bi-play-circle-fill"></i> <span data-i18n="nav_complete_analysis">Launch Complete Analysis</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,49 @@
 from typing import Dict, Any, Tuple, List
-from Bio.Align import PairwiseAligner
 from app.services.dna_service import sanitize_dna, validate_dna
+
+
+def _pure_python_needleman_wunsch(seq1: str, seq2: str, match_score: float = 2.0, mismatch_score: float = -1.0, gap_score: float = -2.0) -> Tuple[str, str, float]:
+    """
+    Pure-Python Needleman-Wunsch global pairwise sequence alignment algorithm.
+    Used as a mathematically accurate fallback when native Biopython extensions (_pairwisealigner / _arraycore) are blocked by OS security policy.
+    """
+    m, n = len(seq1), len(seq2)
+    dp = [[0.0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(1, m + 1):
+        dp[i][0] = i * gap_score
+    for j in range(1, n + 1):
+        dp[0][j] = j * gap_score
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            s = match_score if seq1[i - 1] == seq2[j - 1] else mismatch_score
+            diag = dp[i - 1][j - 1] + s
+            up = dp[i - 1][j] + gap_score
+            left = dp[i][j - 1] + gap_score
+            dp[i][j] = max(diag, up, left)
+
+    align1, align2 = [], []
+    i, j = m, n
+    while i > 0 or j > 0:
+        if i > 0 and j > 0:
+            s = match_score if seq1[i - 1] == seq2[j - 1] else mismatch_score
+            if dp[i][j] == dp[i - 1][j - 1] + s:
+                align1.append(seq1[i - 1])
+                align2.append(seq2[j - 1])
+                i -= 1
+                j -= 1
+                continue
+        if i > 0 and (j == 0 or dp[i][j] == dp[i - 1][j] + gap_score):
+            align1.append(seq1[i - 1])
+            align2.append('-')
+            i -= 1
+        else:
+            align1.append('-')
+            align2.append(seq2[j - 1])
+            j -= 1
+
+    return "".join(reversed(align1)), "".join(reversed(align2)), float(dp[m][n])
 
 
 def perform_pairwise_alignment(ref_seq: str, query_seq: str) -> Dict[str, Any]:
@@ -29,26 +72,28 @@ def perform_pairwise_alignment(ref_seq: str, query_seq: str) -> Dict[str, Any]:
             "visual_blocks": []
         }
 
-    # Initialize Biopython PairwiseAligner
-    aligner = PairwiseAligner()
-    aligner.mode = 'global'
-    aligner.match_score = 2.0
-    aligner.mismatch_score = -1.0
-    aligner.open_gap_score = -2.0
-    aligner.extend_gap_score = -0.5
+    aligned_ref = None
+    aligned_query = None
+    score = 0.0
 
-    alignments = aligner.align(ref, query)
+    # Try Biopython PairwiseAligner first
     try:
+        from Bio.Align import PairwiseAligner
+        aligner = PairwiseAligner()
+        aligner.mode = 'global'
+        aligner.match_score = 2.0
+        aligner.mismatch_score = -1.0
+        aligner.open_gap_score = -2.0
+        aligner.extend_gap_score = -0.5
+
+        alignments = aligner.align(ref, query)
         best_alignment = next(alignments)
         score = float(best_alignment.score)
-        # Format alignment strings
         aligned_ref = str(best_alignment[0])
         aligned_query = str(best_alignment[1])
-    except StopIteration:
-        # Fallback simple alignment
-        aligned_ref = ref
-        aligned_query = query
-        score = 0.0
+    except Exception:
+        # Fallback to pure Python Needleman-Wunsch global alignment when native extension is blocked
+        aligned_ref, aligned_query, score = _pure_python_needleman_wunsch(ref, query, 2.0, -1.0, -2.0)
 
     # Calculate matches, mismatches, gaps
     match_chars = []
